@@ -20,6 +20,8 @@ import java.util.List;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import ro.fortsoft.pf4j.RuntimeMode;
+
 /**
  * 
  * @className	： Pf4jProperties
@@ -28,24 +30,28 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * @date		： 2017年10月31日 下午6:24:59
  * @version 	V1.0
  */
-@ConfigurationProperties(Pf4jProperties.PREFIX)
+@ConfigurationProperties(prefix = Pf4jProperties.PREFIX)
 public class Pf4jProperties {
 
-	public static final String PREFIX = "spring.pf4j";
+	public static final String PREFIX = "pf4j";
 
 	/** 是否启用 **/
-	protected Boolean enabled = false;
+	protected boolean enabled = false;
 	/** 数据库列与表达式对应关系 **/
-	private List<String> classesDirectories = new ArrayList<String>();
-	private List<String> libDirectories = new ArrayList<String>();
-	/** 是否自动注入依赖对象,该参数需要 pf4j-spring 支持 **/
-	private boolean autowire;
+	protected List<String> classesDirectories = new ArrayList<String>();
+	protected List<String> libDirectories = new ArrayList<String>();
+	/** 运行模式：development、 deployment **/
+	protected String mode = RuntimeMode.DEPLOYMENT.toString();
+	/** 插件目录：默认 plugins **/
+	protected String pluginsDir = "plugins";
+	/** 是否注册插件到Spring上下文 **/
+	protected boolean spring = false;
 
-	public Boolean getEnabled() {
+	public boolean isEnabled() {
 		return enabled;
 	}
 
-	public void setEnabled(Boolean enabled) {
+	public void setEnabled(boolean enabled) {
 		this.enabled = enabled;
 	}
 
@@ -65,13 +71,28 @@ public class Pf4jProperties {
 		this.libDirectories = libDirectories;
 	}
 
-	public boolean isAutowire() {
-		return autowire;
+	public String getMode() {
+		return mode;
 	}
 
-	public void setAutowire(boolean autowire) {
-		this.autowire = autowire;
+	public void setMode(String mode) {
+		this.mode = mode;
+	}
+
+	public String getPluginsDir() {
+		return pluginsDir;
+	}
+
+	public void setPluginsDir(String pluginsDir) {
+		this.pluginsDir = pluginsDir;
+	}
+
+	public boolean isSpring() {
+		return spring;
+	}
+
+	public void setSpring(boolean spring) {
+		this.spring = spring;
 	}
 	
-
 }

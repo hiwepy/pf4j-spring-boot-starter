@@ -46,7 +46,12 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter</artifactId>
-			
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-logging</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<!-- Spring Boot Test 依赖 -->
 		<dependency>
@@ -72,6 +77,11 @@
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
 		</dependency>
+		<dependency>
+		    <groupId>org.slf4j</groupId>
+		    <artifactId>slf4j-log4j12</artifactId>
+		    <scope>test</scope>
+		</dependency>
 	
 		<!-- https://mvnrepository.com/artifact/ro.fortsoft.pf4j/pf4j -->
 		<dependency>
@@ -90,6 +100,16 @@
 		    <groupId>ro.fortsoft.pf4j</groupId>
 		    <artifactId>pf4j-spring</artifactId>
 		    <version>0.3.2</version>
+		    <exclusions>
+		    	<exclusion>
+		    		<groupId>log4j</groupId>
+		    		<artifactId>log4j</artifactId>
+		    	</exclusion>
+		    	<exclusion>
+		    		<groupId>org.slf4j</groupId>
+		    		<artifactId>slf4j-log4j12</artifactId>
+		    	</exclusion>
+		    </exclusions>
 		</dependency>
 		
 	</dependencies>

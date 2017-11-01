@@ -18,13 +18,13 @@ package ro.fortsoft.pf4j.spring.boot;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.util.StringUtils;
 
 import ro.fortsoft.pf4j.PluginClasspath;
 import ro.fortsoft.pf4j.PluginDescriptor;
@@ -32,6 +32,7 @@ import ro.fortsoft.pf4j.PluginManager;
 import ro.fortsoft.pf4j.PluginStateEvent;
 import ro.fortsoft.pf4j.PluginStateListener;
 import ro.fortsoft.pf4j.spring.boot.ext.Pf4jJarPluginManager;
+import ro.fortsoft.pf4j.spring.boot.ext.Pf4jJarPluginWhitSpringManager;
 import ro.fortsoft.pf4j.spring.boot.ext.Pf4jPluginClasspath;
 
 /**
@@ -45,22 +46,21 @@ import ro.fortsoft.pf4j.spring.boot.ext.Pf4jPluginClasspath;
 @Configuration
 @ConditionalOnClass({ PluginManager.class })
 @ConditionalOnProperty(prefix = Pf4jProperties.PREFIX, value = "enabled", havingValue = "true")
-@EnableConfigurationProperties({ Pf4jProperties.class })
-public class Pf4jAutoConfiguration implements InitializingBean, DisposableBean {
+@EnableConfigurationProperties(Pf4jProperties.class)
+public class Pf4jAutoConfiguration implements DisposableBean {
 
 	private PluginManager pluginManager;
 	private Logger logger = LoggerFactory.getLogger(Pf4jAutoConfiguration.class);
 
 	@Bean
 	@ConditionalOnMissingBean(PluginStateListener.class)
-	@ConditionalOnProperty(prefix = Pf4jProperties.PREFIX, value = "autowire", havingValue = "false", matchIfMissing = true)
 	public PluginStateListener pluginStateListener() {
 
 		return new PluginStateListener() {
 
 			@Override
 			public void pluginStateChanged(PluginStateEvent event) {
-					
+
 				PluginDescriptor descriptor = event.getPlugin().getDescriptor();
 
 				if (logger.isDebugEnabled()) {
@@ -73,51 +73,62 @@ public class Pf4jAutoConfiguration implements InitializingBean, DisposableBean {
 
 		};
 	}
-	
+
 	@Bean
-	@ConditionalOnMissingBean(PluginManager.class)
-	@ConditionalOnProperty(prefix = Pf4jProperties.PREFIX, value = "autowire", havingValue = "false", matchIfMissing = true)
 	public PluginManager pluginManager(Pf4jProperties properties) {
+
+		System.setProperty("pf4j.pluginsDir", StringUtils.hasText(properties.getPluginsDir()) ? properties.getPluginsDir() : "plugins");
+		System.setProperty("pf4j.mode", properties.getMode());
+
 		// final PluginManager pluginManager = new DefaultPluginManager();
 		// final PluginManager pluginManager = new JarPluginManager();
-		
-		//PluginManager pluginManager = new Pf4jPluginManager(properties);
-		
-		PluginClasspath pluginClasspath = new Pf4jPluginClasspath(properties.getClassesDirectories() , properties.getLibDirectories());
-		
-		PluginManager pluginManager = new Pf4jJarPluginManager(pluginClasspath);
-		
-		
-		/*pluginManager.enablePlugin(pluginId)
-		pluginManager.disablePlugin(pluginId)
-		pluginManager.deletePlugin(pluginId)
-		
-		pluginManager.loadPlugin(pluginPath)
-		pluginManager.startPlugin(pluginId)
-		pluginManager.stopPlugin(pluginId)
-		pluginManager.unloadPlugin(pluginId)*/
-		
-		//加载插件
-		pluginManager.loadPlugins();
-		
-		// pluginManager.addPluginStateListener(listener);
 
+		// PluginManager pluginManager = new Pf4jPluginManager(properties);
+
+		PluginClasspath pluginClasspath = new Pf4jPluginClasspath(properties.getClassesDirectories(),
+				properties.getLibDirectories());
+
+		PluginManager pluginManager = null;
+		if(properties.isSpring()) {
+			
+			/**
+			 * 使用Spring时需编写如下的初始化逻辑
+			 * @Configuration
+				public class Pf4jConfig {
+					@Bean
+					public ExtensionsInjector extensionsInjector() {
+						return new ExtensionsInjector();
+					}
+				}
+			 * 
+			 */
+			
+			pluginManager = new Pf4jJarPluginWhitSpringManager(pluginClasspath);
+		}else {
+			pluginManager = new Pf4jJarPluginManager(pluginClasspath);
+		}
+		
+		/*
+		 * pluginManager.enablePlugin(pluginId) pluginManager.disablePlugin(pluginId)
+		 * pluginManager.deletePlugin(pluginId)
+		 * 
+		 * pluginManager.loadPlugin(pluginPath) pluginManager.startPlugin(pluginId)
+		 * pluginManager.stopPlugin(pluginId) pluginManager.unloadPlugin(pluginId)
+		 */
+
+		// 加载插件
+		pluginManager.loadPlugins();
+
+		// 启动插件
+		pluginManager.startPlugins();
+				
 		this.pluginManager = pluginManager;
 		return pluginManager;
-	}
-	
-	@Override
-	public void afterPropertiesSet() throws Exception {
-		// 启动插件
-		if (pluginManager != null) {
-			pluginManager.startPlugins();
-		}
-
 	}
 
 	@Override
 	public void destroy() throws Exception {
-		//销毁插件
+		// 销毁插件
 		if (pluginManager != null) {
 			pluginManager.stopPlugins();
 		}
