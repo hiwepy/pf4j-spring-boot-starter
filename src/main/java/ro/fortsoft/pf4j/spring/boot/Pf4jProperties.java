@@ -42,10 +42,12 @@ public class Pf4jProperties {
 	protected List<String> libDirectories = new ArrayList<String>();
 	/** 运行模式：development、 deployment **/
 	protected String mode = RuntimeMode.DEPLOYMENT.toString();
-	/** 插件目录：默认 plugins **/
+	/** 插件目录：默认 plugins;非jar模式的插件时，该值应该是绝对目录地址  **/
 	protected String pluginsDir = "plugins";
 	/** 是否注册插件到Spring上下文 **/
 	protected boolean spring = false;
+	/** 插件是否jar包 **/
+	protected boolean jarPackages = true;
 
 	public boolean isEnabled() {
 		return enabled;
@@ -93,6 +95,14 @@ public class Pf4jProperties {
 
 	public void setSpring(boolean spring) {
 		this.spring = spring;
+	}
+
+	public boolean isJarPackages() {
+		return jarPackages;
+	}
+
+	public void setJarPackages(boolean jarPackages) {
+		this.jarPackages = jarPackages;
 	}
 	
 }

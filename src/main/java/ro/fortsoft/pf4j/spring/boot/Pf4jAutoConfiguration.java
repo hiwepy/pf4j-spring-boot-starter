@@ -15,6 +15,8 @@
  */
 package ro.fortsoft.pf4j.spring.boot;
 
+import java.io.File;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
@@ -31,9 +33,11 @@ import ro.fortsoft.pf4j.PluginDescriptor;
 import ro.fortsoft.pf4j.PluginManager;
 import ro.fortsoft.pf4j.PluginStateEvent;
 import ro.fortsoft.pf4j.PluginStateListener;
+import ro.fortsoft.pf4j.RuntimeMode;
 import ro.fortsoft.pf4j.spring.boot.ext.Pf4jJarPluginManager;
 import ro.fortsoft.pf4j.spring.boot.ext.Pf4jJarPluginWhitSpringManager;
 import ro.fortsoft.pf4j.spring.boot.ext.Pf4jPluginClasspath;
+import ro.fortsoft.pf4j.spring.boot.ext.Pf4jPluginManager;
 
 /**
  * 
@@ -77,35 +81,47 @@ public class Pf4jAutoConfiguration implements DisposableBean {
 	@Bean
 	public PluginManager pluginManager(Pf4jProperties properties) {
 
-		System.setProperty("pf4j.pluginsDir", StringUtils.hasText(properties.getPluginsDir()) ? properties.getPluginsDir() : "plugins");
-		System.setProperty("pf4j.mode", properties.getMode());
-
+		//设置运行模式
+		RuntimeMode mode = RuntimeMode.byName(properties.getMode());
+		System.setProperty("pf4j.mode", mode.toString());
+		
+		//设置插件目录
+		String pluginsDir = StringUtils.hasText(properties.getPluginsDir()) ? properties.getPluginsDir() : "plugins";
+		System.setProperty("pf4j.pluginsDir", pluginsDir);
+		String apphome = System.getProperty("app.home");
+		if(RuntimeMode.DEPLOYMENT.compareTo(RuntimeMode.byName(properties.getMode())) == 0 && StringUtils.hasText(apphome)) {
+			System.setProperty("pf4j.pluginsDir", apphome + File.separator + pluginsDir);
+		}
+		
 		// final PluginManager pluginManager = new DefaultPluginManager();
 		// final PluginManager pluginManager = new JarPluginManager();
-
-		// PluginManager pluginManager = new Pf4jPluginManager(properties);
-
-		PluginClasspath pluginClasspath = new Pf4jPluginClasspath(properties.getClassesDirectories(),
-				properties.getLibDirectories());
-
+		
 		PluginManager pluginManager = null;
-		if(properties.isSpring()) {
+		if(properties.isJarPackages()) {
 			
-			/**
-			 * 使用Spring时需编写如下的初始化逻辑
-			 * @Configuration
-				public class Pf4jConfig {
-					@Bean
-					public ExtensionsInjector extensionsInjector() {
-						return new ExtensionsInjector();
+			PluginClasspath pluginClasspath = new Pf4jPluginClasspath(properties.getClassesDirectories(),
+					properties.getLibDirectories());
+			
+			if(properties.isSpring()) {
+				
+				/**
+				 * 使用Spring时需编写如下的初始化逻辑
+				 * @Configuration
+					public class Pf4jConfig {
+						@Bean
+						public ExtensionsInjector extensionsInjector() {
+							return new ExtensionsInjector();
+						}
 					}
-				}
-			 * 
-			 */
-			
-			pluginManager = new Pf4jJarPluginWhitSpringManager(pluginClasspath);
-		}else {
-			pluginManager = new Pf4jJarPluginManager(pluginClasspath);
+				 * 
+				 */
+				
+				pluginManager = new Pf4jJarPluginWhitSpringManager(pluginClasspath);
+			}else {
+				pluginManager = new Pf4jJarPluginManager(pluginClasspath);
+			}
+		} else {
+			pluginManager = new Pf4jPluginManager(pluginsDir);
 		}
 		
 		/*

@@ -15,31 +15,24 @@
  */
 package ro.fortsoft.pf4j.spring.boot.ext;
 
+import java.io.File;
+import java.nio.file.FileSystems;
 import java.nio.file.Path;
 
-	
 import ro.fortsoft.pf4j.DefaultPluginManager;
-import ro.fortsoft.pf4j.DevelopmentPluginClasspath;
-import ro.fortsoft.pf4j.PluginClasspath;
-import ro.fortsoft.pf4j.spring.boot.Pf4jProperties;
 
 public class Pf4jPluginManager extends DefaultPluginManager {
 
-	protected Pf4jProperties properties;
+	public Pf4jPluginManager(File path) {
+		super(path.toPath());
+	}
 
-	public Pf4jPluginManager(Pf4jProperties properties) {
-		super();
-		this.properties = properties;
+	public Pf4jPluginManager(String path) {
+		super(FileSystems.getDefault().getPath(path));
 	}
 
 	public Pf4jPluginManager(Path pluginsRoot) {
 		super(pluginsRoot);
-	}
-
-	@Override
-	protected PluginClasspath createPluginClasspath() {
-		return isDevelopment() ? new DevelopmentPluginClasspath()
-				: new Pf4jPluginClasspath(properties.getClassesDirectories(), properties.getLibDirectories());
 	}
 
 }
