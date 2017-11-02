@@ -44,11 +44,17 @@ public class Pf4jProperties {
 	protected String mode = RuntimeMode.DEPLOYMENT.toString();
 	/** 插件目录：默认 plugins;非jar模式的插件时，该值应该是绝对目录地址  **/
 	protected String pluginsDir = "plugins";
+	/** 插件地址：绝对地址 **/
+	protected List<String> plugins = new ArrayList<String>();
 	/** 是否注册插件到Spring上下文 **/
 	protected boolean spring = false;
 	/** 插件是否jar包 **/
 	protected boolean jarPackages = true;
-
+	/** 是否延时加载、启动插件 **/
+	protected boolean lazy = true;
+	/** 插件延时加载、启动时间，单位毫秒  **/
+	protected long delay = 0;
+	
 	public boolean isEnabled() {
 		return enabled;
 	}
@@ -88,6 +94,14 @@ public class Pf4jProperties {
 	public void setPluginsDir(String pluginsDir) {
 		this.pluginsDir = pluginsDir;
 	}
+	
+	public List<String> getPlugins() {
+		return plugins;
+	}
+
+	public void setPlugins(List<String> plugins) {
+		this.plugins = plugins;
+	}
 
 	public boolean isSpring() {
 		return spring;
@@ -103,6 +117,22 @@ public class Pf4jProperties {
 
 	public void setJarPackages(boolean jarPackages) {
 		this.jarPackages = jarPackages;
+	}
+
+	public boolean isLazy() {
+		return lazy;
+	}
+
+	public void setLazy(boolean lazy) {
+		this.lazy = lazy;
+	}
+
+	public long getDelay() {
+		return delay;
+	}
+
+	public void setDelay(long delay) {
+		this.delay = delay;
 	}
 	
 }

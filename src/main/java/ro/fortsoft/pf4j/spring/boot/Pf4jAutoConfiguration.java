@@ -16,6 +16,7 @@
 package ro.fortsoft.pf4j.spring.boot;
 
 import java.io.File;
+import java.util.Timer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,6 +39,9 @@ import ro.fortsoft.pf4j.spring.boot.ext.Pf4jJarPluginManager;
 import ro.fortsoft.pf4j.spring.boot.ext.Pf4jJarPluginWhitSpringManager;
 import ro.fortsoft.pf4j.spring.boot.ext.Pf4jPluginClasspath;
 import ro.fortsoft.pf4j.spring.boot.ext.Pf4jPluginManager;
+import ro.fortsoft.pf4j.spring.boot.ext.PluginLazyTask;
+import ro.fortsoft.pf4j.spring.boot.ext.PluginUtils;
+import ro.fortsoft.pf4j.spring.boot.ext.PluginsLazyTask;
 
 /**
  * 
@@ -55,7 +59,9 @@ public class Pf4jAutoConfiguration implements DisposableBean {
 
 	private PluginManager pluginManager;
 	private Logger logger = LoggerFactory.getLogger(Pf4jAutoConfiguration.class);
-
+	//实例化Timer类 
+	private Timer timer = new Timer(true);  
+	
 	@Bean
 	@ConditionalOnMissingBean(PluginStateListener.class)
 	public PluginStateListener pluginStateListener() {
@@ -131,13 +137,21 @@ public class Pf4jAutoConfiguration implements DisposableBean {
 		 * pluginManager.loadPlugin(pluginPath) pluginManager.startPlugin(pluginId)
 		 * pluginManager.stopPlugin(pluginId) pluginManager.unloadPlugin(pluginId)
 		 */
-
-		// 加载插件
-		pluginManager.loadPlugins();
-
-		// 启动插件
-		pluginManager.startPlugins();
-				
+		
+		if(properties.isLazy()) {
+			// 延时加载、启动插件目录中的插件
+			timer.schedule(new PluginLazyTask(pluginManager) , properties.getDelay()); 
+			// 延时加载、启动绝对路径指定的插件
+			timer.schedule(new PluginsLazyTask(pluginManager, properties.getPlugins()) , properties.getDelay()); 
+		} else {
+			
+			// 加载、启动插件目录中的插件
+			pluginManager.loadPlugins();
+			pluginManager.startPlugins();
+			// 加载、启动绝对路径指定的插件
+			PluginUtils.loadAndStartPlugins(pluginManager, properties.getPlugins());
+		} 
+		
 		this.pluginManager = pluginManager;
 		return pluginManager;
 	}
