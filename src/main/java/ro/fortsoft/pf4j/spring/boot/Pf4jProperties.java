@@ -21,6 +21,7 @@ import java.util.List;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import ro.fortsoft.pf4j.RuntimeMode;
+import ro.fortsoft.pf4j.spring.boot.ext.Pf4jUpdateRepository;
 
 /**
  * 
@@ -54,6 +55,12 @@ public class Pf4jProperties {
 	protected boolean lazy = true;
 	/** 插件延时加载、启动时间，单位毫秒  **/
 	protected long delay = 0;
+	
+	/** 插件更新库JSON配置文件 **/
+	protected String reposJsonPath = "repositories.json";
+	/** 插件远程更新库配置列表 **/
+	protected List<Pf4jUpdateRepository> repos = new ArrayList<Pf4jUpdateRepository>();
+	
 	
 	public boolean isEnabled() {
 		return enabled;
@@ -133,6 +140,22 @@ public class Pf4jProperties {
 
 	public void setDelay(long delay) {
 		this.delay = delay;
+	}
+
+	public String getReposJsonPath() {
+		return reposJsonPath;
+	}
+
+	public void setReposJsonPath(String reposJsonPath) {
+		this.reposJsonPath = reposJsonPath;
+	}
+
+	public List<Pf4jUpdateRepository> getRepos() {
+		return repos;
+	}
+
+	public void setRepos(List<Pf4jUpdateRepository> repos) {
+		this.repos = repos;
 	}
 	
 }

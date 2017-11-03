@@ -15,24 +15,36 @@
  */
 package ro.fortsoft.pf4j.spring.boot.ext;
 
-import java.io.File;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.net.URL;
 
-import ro.fortsoft.pf4j.DefaultPluginManager;
+public class Pf4jUpdateRepository {
 
-public class Pf4jPluginManager extends DefaultPluginManager {
+	private String id;
+	private URL url;
+	private String pluginsJsonFileName = "plugins.json";
 
-	public Pf4jPluginManager(File path) {
-		super(path.toPath());
+	public String getId() {
+		return id;
 	}
 
-	public Pf4jPluginManager(String path) {
-		super(Paths.get(path));
+	public void setId(String id) {
+		this.id = id;
 	}
 
-	public Pf4jPluginManager(Path pluginsRoot) {
-		super(pluginsRoot);
+	public URL getUrl() {
+		return url;
+	}
+
+	public void setUrl(URL url) {
+		this.url = url;
+	}
+
+	public String getPluginsJsonFileName() {
+		return pluginsJsonFileName;
+	}
+
+	public void setPluginsJsonFileName(String pluginsJsonFileName) {
+		this.pluginsJsonFileName = pluginsJsonFileName;
 	}
 
 }

@@ -16,6 +16,9 @@
 package ro.fortsoft.pf4j.spring.boot;
 
 import java.io.File;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Timer;
 
 import org.slf4j.Logger;
@@ -27,6 +30,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import ro.fortsoft.pf4j.PluginClasspath;
@@ -39,9 +43,13 @@ import ro.fortsoft.pf4j.spring.boot.ext.Pf4jJarPluginManager;
 import ro.fortsoft.pf4j.spring.boot.ext.Pf4jJarPluginWhitSpringManager;
 import ro.fortsoft.pf4j.spring.boot.ext.Pf4jPluginClasspath;
 import ro.fortsoft.pf4j.spring.boot.ext.Pf4jPluginManager;
+import ro.fortsoft.pf4j.spring.boot.ext.Pf4jUpdateRepository;
 import ro.fortsoft.pf4j.spring.boot.ext.PluginLazyTask;
 import ro.fortsoft.pf4j.spring.boot.ext.PluginUtils;
 import ro.fortsoft.pf4j.spring.boot.ext.PluginsLazyTask;
+import ro.fortsoft.pf4j.update.DefaultUpdateRepository;
+import ro.fortsoft.pf4j.update.UpdateManager;
+import ro.fortsoft.pf4j.update.UpdateRepository;
 
 /**
  * 
@@ -155,7 +163,27 @@ public class Pf4jAutoConfiguration implements DisposableBean {
 		this.pluginManager = pluginManager;
 		return pluginManager;
 	}
+	
+	@Bean
+	public UpdateManager updateManager(PluginManager pluginManager, Pf4jProperties properties) {
+		UpdateManager updateManager = null;
+		if (StringUtils.hasText(properties.getReposJsonPath())) {
+			updateManager = new UpdateManager(pluginManager, Paths.get(properties.getReposJsonPath()));
+		} else if (!CollectionUtils.isEmpty(properties.getRepos())) {
 
+			List<UpdateRepository> repos = new ArrayList<UpdateRepository>();
+			for (Pf4jUpdateRepository repo : properties.getRepos()) {
+				repos.add(new DefaultUpdateRepository(repo.getId(), repo.getUrl(), repo.getPluginsJsonFileName()));
+			}
+			updateManager = new UpdateManager(pluginManager, repos);
+
+		} else {
+			updateManager = new UpdateManager(pluginManager);
+		}
+		return updateManager;
+
+	}
+	
 	@Override
 	public void destroy() throws Exception {
 		// 销毁插件
