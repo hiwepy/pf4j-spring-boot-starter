@@ -25,11 +25,6 @@ import ro.fortsoft.pf4j.spring.boot.ext.Pf4jUpdateRepository;
 
 /**
  * 
- * @className	： Pf4jProperties
- * @description	： TODO(描述这个类的作用)
- * @author 		： <a href="https://github.com/vindell">vindell</a>
- * @date		： 2017年10月31日 下午6:24:59
- * @version 	V1.0
  */
 @ConfigurationProperties(prefix = Pf4jProperties.PREFIX)
 public class Pf4jProperties {
