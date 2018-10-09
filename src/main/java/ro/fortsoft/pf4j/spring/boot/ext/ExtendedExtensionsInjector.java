@@ -70,12 +70,8 @@ public class ExtendedExtensionsInjector extends ExtensionsInjector {
 		injectionMetadataCacheField.setAccessible(true);
 	}
 	
-	protected final RequestMappingHandlerMapping requestMappingHandlerMapping;
-	private DefaultListableBeanFactory beanFactory;
-	
-	public ExtendedExtensionsInjector(RequestMappingHandlerMapping requestMappingHandlerMapping) {
-		this.requestMappingHandlerMapping = requestMappingHandlerMapping;
-	}
+	protected RequestMappingHandlerMapping requestMappingHandlerMapping;
+	protected DefaultListableBeanFactory beanFactory;
 	
 	@Override
 	public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
@@ -126,7 +122,6 @@ public class ExtendedExtensionsInjector extends ExtensionsInjector {
 					Object bean = extensionFactory.create(extensionClass);
 					String beanName = InjectorUtils.getBeanName(bean, extensionClassName);
 					
-					beanFactory.registerSingleton(beanName, bean);
 					// 判断对象是否是Controller
 					if (InjectorUtils.isController(bean)) {
 						// 1、如果RequestMapping存在则移除

@@ -23,15 +23,16 @@ import java.util.Timer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
+import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
-import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
 import ro.fortsoft.pf4j.PluginDescriptor;
 import ro.fortsoft.pf4j.PluginManager;
@@ -55,6 +56,7 @@ import ro.fortsoft.pf4j.update.UpdateRepository;
  * @author <a href="https://github.com/vindell">vindell</a>
  */
 @Configuration
+@AutoConfigureAfter({WebMvcAutoConfiguration.class})
 @ConditionalOnClass({ PluginManager.class })
 @ConditionalOnProperty(prefix = Pf4jProperties.PREFIX, value = "enabled", havingValue = "true")
 @EnableConfigurationProperties(Pf4jProperties.class)
@@ -88,8 +90,8 @@ public class Pf4jAutoConfiguration implements DisposableBean {
 	}
 
 	@Bean
-	public ExtendedExtensionsInjector extensionsInjector(RequestMappingHandlerMapping requestMappingHandlerMapping) {
-		return new ExtendedExtensionsInjector(requestMappingHandlerMapping);
+	public ExtendedExtensionsInjector extensionsInjector() {
+		return new ExtendedExtensionsInjector();
 	}
 	
 	@Bean
