@@ -31,13 +31,14 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
+import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
 import ro.fortsoft.pf4j.PluginDescriptor;
 import ro.fortsoft.pf4j.PluginManager;
 import ro.fortsoft.pf4j.PluginStateEvent;
 import ro.fortsoft.pf4j.PluginStateListener;
 import ro.fortsoft.pf4j.RuntimeMode;
-import ro.fortsoft.pf4j.spring.ExtensionsInjector;
+import ro.fortsoft.pf4j.spring.boot.ext.ExtendedExtensionsInjector;
 import ro.fortsoft.pf4j.spring.boot.ext.ExtendedJarPluginManager;
 import ro.fortsoft.pf4j.spring.boot.ext.ExtendedPluginManager;
 import ro.fortsoft.pf4j.spring.boot.ext.task.PluginLazyTask;
@@ -46,7 +47,6 @@ import ro.fortsoft.pf4j.spring.boot.ext.task.PluginsLazyTask;
 import ro.fortsoft.pf4j.spring.boot.ext.update.DefaultUpdateRepositoryProvider;
 import ro.fortsoft.pf4j.spring.boot.ext.update.UpdateRepositoryProvider;
 import ro.fortsoft.pf4j.spring.boot.ext.utils.PluginUtils;
-import ro.fortsoft.pf4j.spring.boot.ext.webmvc.ControllerExtensionsInjector;
 import ro.fortsoft.pf4j.update.UpdateManager;
 import ro.fortsoft.pf4j.update.UpdateRepository;
 
@@ -88,13 +88,8 @@ public class Pf4jAutoConfiguration implements DisposableBean {
 	}
 
 	@Bean
-	public ExtensionsInjector extensionsInjector() {
-		return new ExtensionsInjector();
-	}
-
-	@Bean
-	public ControllerExtensionsInjector controllerExtensionsInjector() {
-		return new ControllerExtensionsInjector();
+	public ExtendedExtensionsInjector extensionsInjector(RequestMappingHandlerMapping requestMappingHandlerMapping) {
+		return new ExtendedExtensionsInjector(requestMappingHandlerMapping);
 	}
 	
 	@Bean
@@ -118,9 +113,9 @@ public class Pf4jAutoConfiguration implements DisposableBean {
 
 		PluginManager pluginManager = null;
 		if (properties.isJarPackages()) {
-			pluginManager = new ExtendedJarPluginManager(properties.getClassesDirectories(), properties.getLibDirectories());
+			pluginManager = new ExtendedJarPluginManager();
 		} else {
-			pluginManager = new ExtendedPluginManager(pluginsRoot, properties.getClassesDirectories(), properties.getLibDirectories());
+			pluginManager = new ExtendedPluginManager(pluginsRoot);
 		}
 
 		/*

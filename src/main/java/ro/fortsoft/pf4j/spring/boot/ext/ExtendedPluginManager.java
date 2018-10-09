@@ -18,79 +18,28 @@ package ro.fortsoft.pf4j.spring.boot.ext;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
 
 import ro.fortsoft.pf4j.DefaultPluginManager;
-import ro.fortsoft.pf4j.DevelopmentPluginClasspath;
 import ro.fortsoft.pf4j.ExtensionFactory;
-import ro.fortsoft.pf4j.PluginClasspath;
 import ro.fortsoft.pf4j.spring.SpringExtensionFactory;
 
 public class ExtendedPluginManager extends DefaultPluginManager {
 
-	/** Extended Plugin Class Directory **/
-	private List<String> classesDirectories = new ArrayList<String>();
-	/** Extended Plugin Jar Directory **/
-	private List<String> libDirectories = new ArrayList<String>();
-
 	public ExtendedPluginManager(File pluginsRoot) {
 		super(pluginsRoot.toPath());
-	}
-
-	public ExtendedPluginManager(File pluginsRoot, List<String> classesDirectories, List<String> libDirectories) {
-		super(pluginsRoot.toPath());
-		this.classesDirectories.addAll(classesDirectories);
-		this.libDirectories.addAll(libDirectories);
 	}
 
 	public ExtendedPluginManager(String pluginsRoot) {
 		super(Paths.get(pluginsRoot));
 	}
 
-	public ExtendedPluginManager(String pluginsRoot, List<String> classesDirectories, List<String> libDirectories) {
-		super(Paths.get(pluginsRoot));
-		this.classesDirectories.addAll(classesDirectories);
-		this.libDirectories.addAll(libDirectories);
-	}
-
 	public ExtendedPluginManager(Path pluginsRoot) {
 		super(pluginsRoot);
 	}
 
-	public ExtendedPluginManager(Path pluginsRoot, List<String> classesDirectories, List<String> libDirectories) {
-		super(pluginsRoot);
-		this.classesDirectories.addAll(classesDirectories);
-		this.libDirectories.addAll(libDirectories);
-	}
-	
-	@Override
-	protected PluginClasspath createPluginClasspath() {
-		return isDevelopment() ? new DevelopmentPluginClasspath()
-				: new ExtendedPluginClasspath(
-						getClassesDirectories().toArray(new String[getClassesDirectories().size()]),
-						getLibDirectories().toArray(new String[getClassesDirectories().size()]));
-	}
-	
 	@Override
     protected ExtensionFactory createExtensionFactory() {
         return new SpringExtensionFactory(this);
     }
-	
-	public List<String> getClassesDirectories() {
-		return classesDirectories;
-	}
-
-	public void setClassesDirectories(List<String> classesDirectories) {
-		this.classesDirectories = classesDirectories;
-	}
-
-	public List<String> getLibDirectories() {
-		return libDirectories;
-	}
-
-	public void setLibDirectories(List<String> libDirectories) {
-		this.libDirectories = libDirectories;
-	}
 
 }

@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package ro.fortsoft.pf4j.spring.boot.ext.webmvc;
+package ro.fortsoft.pf4j.spring.boot.ext;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -21,24 +21,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.lang.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor;
-import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.MethodIntrospector;
-import org.springframework.stereotype.Controller;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.MultiValueMap;
 import org.springframework.util.PathMatcher;
 import org.springframework.util.ReflectionUtils;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.mvc.condition.PatternsRequestCondition;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
@@ -47,10 +40,16 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
 import ro.fortsoft.pf4j.ExtensionFactory;
 import ro.fortsoft.pf4j.PluginManager;
 import ro.fortsoft.pf4j.PluginWrapper;
+import ro.fortsoft.pf4j.spring.ExtensionsInjector;
+import ro.fortsoft.pf4j.spring.boot.ext.utils.InjectorUtils;
 
-public class ControllerExtensionsInjector implements BeanFactoryPostProcessor, ApplicationContextAware {
+/**
+ * TODO
+ * @author 		： <a href="https://github.com/vindell">vindell</a>
+ */
+public class ExtendedExtensionsInjector extends ExtensionsInjector {
 
-	private static final Logger log = LoggerFactory.getLogger(ControllerExtensionsInjector.class);
+	private static final Logger log = LoggerFactory.getLogger(ExtendedExtensionsInjector.class);
 
 	// RequestMappingHandlerMapping
 	protected static Method detectHandlerMethodsMethod = ReflectionUtils.findMethod(RequestMappingHandlerMapping.class,
@@ -64,25 +63,20 @@ public class ControllerExtensionsInjector implements BeanFactoryPostProcessor, A
 	protected static Field injectionMetadataCacheField = ReflectionUtils
 			.findField(AutowiredAnnotationBeanPostProcessor.class, "injectionMetadataCache");
 
-	private DefaultListableBeanFactory beanFactory;
-	private ApplicationContext applicationContext;
-
-	// millis
-	@Autowired
-	protected RequestMappingHandlerMapping requestMappingHandlerMapping;
-
 	static {
 		detectHandlerMethodsMethod.setAccessible(true);
 		getMappingForMethodMethod.setAccessible(true);
 		mappingRegistryField.setAccessible(true);
 		injectionMetadataCacheField.setAccessible(true);
 	}
-
-	@Override
-	public void setApplicationContext(ApplicationContext applicationContext) {
-		this.applicationContext = applicationContext;
+	
+	protected final RequestMappingHandlerMapping requestMappingHandlerMapping;
+	private DefaultListableBeanFactory beanFactory;
+	
+	public ExtendedExtensionsInjector(RequestMappingHandlerMapping requestMappingHandlerMapping) {
+		this.requestMappingHandlerMapping = requestMappingHandlerMapping;
 	}
-
+	
 	@Override
 	public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
 
@@ -90,7 +84,7 @@ public class ControllerExtensionsInjector implements BeanFactoryPostProcessor, A
 			log.warn("BeanFactory must be DefaultListableBeanFactory type");
 			return;
 		}
-		this.beanFactory = (DefaultListableBeanFactory) applicationContext.getAutowireCapableBeanFactory();
+		this.beanFactory = (DefaultListableBeanFactory) beanFactory;
 
 		PluginManager pluginManager = beanFactory.getBean(PluginManager.class);
 		ExtensionFactory extensionFactory = pluginManager.getExtensionFactory();
@@ -102,16 +96,18 @@ public class ControllerExtensionsInjector implements BeanFactoryPostProcessor, A
 				log.debug("Register extension '{}' as bean", extensionClassName);
 				Class<?> extensionClass = getClass().getClassLoader().loadClass(extensionClassName);
 				Object bean = extensionFactory.create(extensionClass);
+				String beanName = InjectorUtils.getBeanName(bean, extensionClassName);
+				
 				// 判断对象是否是Controller
-				if (isController(bean)) {
+				if (InjectorUtils.isController(bean)) {
 					// 1、如果RequestMapping存在则移除
-					removeRequestMappingIfNecessary(extensionClassName);
+					removeRequestMappingIfNecessary(beanName);
 					// 2、注册新的Controller
-					getBeanFactory().registerSingleton(extensionClassName, bean);
+					beanFactory.registerSingleton(beanName, bean);
 					// 3、注册新的RequestMapping
-					registerRequestMappingIfNecessary(extensionClassName);
+					registerRequestMappingIfNecessary(beanName);
 				} else {
-					getBeanFactory().registerSingleton(extensionClassName, bean);
+					beanFactory.registerSingleton(beanName, bean);
 				}
 			} catch (ClassNotFoundException e) {
 				log.error(e.getMessage(), e);
@@ -128,17 +124,19 @@ public class ControllerExtensionsInjector implements BeanFactoryPostProcessor, A
 					log.debug("Register extension '{}' as bean", extensionClassName);
 					Class<?> extensionClass = plugin.getPluginClassLoader().loadClass(extensionClassName);
 					Object bean = extensionFactory.create(extensionClass);
-					beanFactory.registerSingleton(extensionClassName, bean);
+					String beanName = InjectorUtils.getBeanName(bean, extensionClassName);
+					
+					beanFactory.registerSingleton(beanName, bean);
 					// 判断对象是否是Controller
-					if (isController(bean)) {
+					if (InjectorUtils.isController(bean)) {
 						// 1、如果RequestMapping存在则移除
-						removeRequestMappingIfNecessary(extensionClassName);
+						removeRequestMappingIfNecessary(beanName);
 						// 2、注册新的Controller
-						getBeanFactory().registerSingleton(extensionClassName, bean);
+						beanFactory.registerSingleton(beanName, bean);
 						// 3、注册新的RequestMapping
-						registerRequestMappingIfNecessary(extensionClassName);
+						registerRequestMappingIfNecessary(beanName);
 					} else {
-						getBeanFactory().registerSingleton(extensionClassName, bean);
+						beanFactory.registerSingleton(beanName, bean);
 					}
 				} catch (ClassNotFoundException e) {
 					log.error(e.getMessage(), e);
@@ -147,22 +145,17 @@ public class ControllerExtensionsInjector implements BeanFactoryPostProcessor, A
 		}
 	}
 
-	protected boolean isController(Object bean) {
-		return !ArrayUtils.isEmpty(bean.getClass().getAnnotationsByType(RestController.class))
-				|| !ArrayUtils.isEmpty(bean.getClass().getAnnotationsByType(Controller.class));
-	}
-
 	@SuppressWarnings("unchecked")
 	protected void removeRequestMappingIfNecessary(String controllerBeanName) {
 
-		if (!getBeanFactory().containsBean(controllerBeanName)) {
+		if (!beanFactory.containsBean(controllerBeanName)) {
 			return;
 		}
 
 		RequestMappingHandlerMapping requestMappingHandlerMapping = getRequestMappingHandlerMapping();
 
 		// remove old
-		Class<?> handlerType = getApplicationContext().getType(controllerBeanName);
+		Class<?> handlerType = beanFactory.getType(controllerBeanName);
 		final Class<?> userType = ClassUtils.getUserClass(handlerType);
 
 		/*
@@ -233,18 +226,10 @@ public class ControllerExtensionsInjector implements BeanFactoryPostProcessor, A
 			if (requestMappingHandlerMapping != null) {
 				return requestMappingHandlerMapping;
 			}
-			return getApplicationContext().getBean(RequestMappingHandlerMapping.class);
+			return beanFactory.getBean(RequestMappingHandlerMapping.class);
 		} catch (Exception e) {
 			throw new IllegalArgumentException("applicationContext must has RequestMappingHandlerMapping");
 		}
 	}
-
-	public DefaultListableBeanFactory getBeanFactory() {
-		return beanFactory;
-	}
-
-	public ApplicationContext getApplicationContext() {
-		return applicationContext;
-	}
-
+	
 }

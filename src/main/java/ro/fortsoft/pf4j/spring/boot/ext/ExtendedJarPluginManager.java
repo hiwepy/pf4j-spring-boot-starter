@@ -15,49 +15,18 @@
  */
 package ro.fortsoft.pf4j.spring.boot.ext;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import ro.fortsoft.pf4j.DevelopmentPluginClasspath;
 import ro.fortsoft.pf4j.ExtensionFactory;
 import ro.fortsoft.pf4j.JarPluginManager;
-import ro.fortsoft.pf4j.PluginClasspath;
 import ro.fortsoft.pf4j.spring.SpringExtensionFactory;
 
 public class ExtendedJarPluginManager extends JarPluginManager {
 
-	/** Extended Plugin Class Directory **/
-	private List<String> classesDirectories = new ArrayList<String>();
-	/** Extended Plugin Jar Directory **/
-	private List<String> libDirectories = new ArrayList<String>();
-	
 	public ExtendedJarPluginManager() {
-	}
-	
-	public ExtendedJarPluginManager(List<String> classesDirectories, List<String> libDirectories) {
-		this.classesDirectories.addAll(classesDirectories);
-		this.libDirectories.addAll(libDirectories);
-	}
-
-	@Override
-	protected PluginClasspath createPluginClasspath() {
-		return isDevelopment() ? new DevelopmentPluginClasspath()
-				: new ExtendedPluginClasspath(
-						getClassesDirectories().toArray(new String[getClassesDirectories().size()]),
-						getLibDirectories().toArray(new String[getClassesDirectories().size()]));
 	}
 	
 	@Override
     protected ExtensionFactory createExtensionFactory() {
         return new SpringExtensionFactory(this);
     }
-
-	public List<String> getClassesDirectories() {
-		return classesDirectories;
-	}
-
-	public List<String> getLibDirectories() {
-		return libDirectories;
-	}
 
 }
