@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, vindell (https://github.com/vindell).
+ * Copyright (c) 2018, vindell (https://github.com/vindell).
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,7 +17,6 @@ package ro.fortsoft.pf4j.spring.boot;
 
 import java.io.File;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 
@@ -33,21 +32,21 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import ro.fortsoft.pf4j.PluginClasspath;
 import ro.fortsoft.pf4j.PluginDescriptor;
 import ro.fortsoft.pf4j.PluginManager;
 import ro.fortsoft.pf4j.PluginStateEvent;
 import ro.fortsoft.pf4j.PluginStateListener;
 import ro.fortsoft.pf4j.RuntimeMode;
-import ro.fortsoft.pf4j.spring.boot.ext.Pf4jJarPluginManager;
-import ro.fortsoft.pf4j.spring.boot.ext.Pf4jJarPluginWhitSpringManager;
-import ro.fortsoft.pf4j.spring.boot.ext.Pf4jPluginClasspath;
-import ro.fortsoft.pf4j.spring.boot.ext.Pf4jPluginManager;
-import ro.fortsoft.pf4j.spring.boot.ext.Pf4jUpdateRepository;
-import ro.fortsoft.pf4j.spring.boot.ext.PluginLazyTask;
-import ro.fortsoft.pf4j.spring.boot.ext.PluginUtils;
-import ro.fortsoft.pf4j.spring.boot.ext.PluginsLazyTask;
-import ro.fortsoft.pf4j.update.DefaultUpdateRepository;
+import ro.fortsoft.pf4j.spring.ExtensionsInjector;
+import ro.fortsoft.pf4j.spring.boot.ext.ExtendedJarPluginManager;
+import ro.fortsoft.pf4j.spring.boot.ext.ExtendedPluginManager;
+import ro.fortsoft.pf4j.spring.boot.ext.task.PluginLazyTask;
+import ro.fortsoft.pf4j.spring.boot.ext.task.PluginUpdateTask;
+import ro.fortsoft.pf4j.spring.boot.ext.task.PluginsLazyTask;
+import ro.fortsoft.pf4j.spring.boot.ext.update.DefaultUpdateRepositoryProvider;
+import ro.fortsoft.pf4j.spring.boot.ext.update.UpdateRepositoryProvider;
+import ro.fortsoft.pf4j.spring.boot.ext.utils.PluginUtils;
+import ro.fortsoft.pf4j.spring.boot.ext.webmvc.ControllerExtensionsInjector;
 import ro.fortsoft.pf4j.update.UpdateManager;
 import ro.fortsoft.pf4j.update.UpdateRepository;
 
@@ -89,6 +88,16 @@ public class Pf4jAutoConfiguration implements DisposableBean {
 	}
 
 	@Bean
+	public ExtensionsInjector extensionsInjector() {
+		return new ExtensionsInjector();
+	}
+
+	@Bean
+	public ControllerExtensionsInjector controllerExtensionsInjector() {
+		return new ControllerExtensionsInjector();
+	}
+	
+	@Bean
 	public PluginManager pluginManager(Pf4jProperties properties) {
 
 		// 设置运行模式
@@ -96,12 +105,12 @@ public class Pf4jAutoConfiguration implements DisposableBean {
 		System.setProperty("pf4j.mode", mode.toString());
 
 		// 设置插件目录
-		String pluginsDir = StringUtils.hasText(properties.getPluginsDir()) ? properties.getPluginsDir() : "plugins";
-		System.setProperty("pf4j.pluginsDir", pluginsDir);
+		String pluginsRoot = StringUtils.hasText(properties.getPluginsRoot()) ? properties.getPluginsRoot() : "plugins";
+		System.setProperty("pf4j.pluginsDir", pluginsRoot);
 		String apphome = System.getProperty("app.home");
 		if (RuntimeMode.DEPLOYMENT.compareTo(RuntimeMode.byName(properties.getMode())) == 0
 				&& StringUtils.hasText(apphome)) {
-			System.setProperty("pf4j.pluginsDir", apphome + File.separator + pluginsDir);
+			System.setProperty("pf4j.pluginsDir", apphome + File.separator + pluginsRoot);
 		}
 
 		// final PluginManager pluginManager = new DefaultPluginManager();
@@ -109,33 +118,14 @@ public class Pf4jAutoConfiguration implements DisposableBean {
 
 		PluginManager pluginManager = null;
 		if (properties.isJarPackages()) {
-
-			PluginClasspath pluginClasspath = new Pf4jPluginClasspath(properties.getClassesDirectories(),
-					properties.getLibDirectories());
-
-			if (properties.isSpring()) {
-
-				/**
-				 * 使用Spring时需编写如下的初始化逻辑
-				 * 
-				 * @Configuration public class Pf4jConfig {
-				 * @Bean public ExtensionsInjector extensionsInjector() { return new
-				 *       ExtensionsInjector(); } }
-				 * 
-				 */
-
-				pluginManager = new Pf4jJarPluginWhitSpringManager(pluginClasspath);
-			} else {
-				pluginManager = new Pf4jJarPluginManager(pluginClasspath);
-			}
+			pluginManager = new ExtendedJarPluginManager(properties.getClassesDirectories(), properties.getLibDirectories());
 		} else {
-			pluginManager = new Pf4jPluginManager(pluginsDir);
+			pluginManager = new ExtendedPluginManager(pluginsRoot);
 		}
 
 		/*
 		 * pluginManager.enablePlugin(pluginId) pluginManager.disablePlugin(pluginId)
 		 * pluginManager.deletePlugin(pluginId)
-		 * 
 		 * pluginManager.loadPlugin(pluginPath) pluginManager.startPlugin(pluginId)
 		 * pluginManager.stopPlugin(pluginId) pluginManager.unloadPlugin(pluginId)
 		 */
@@ -153,6 +143,7 @@ public class Pf4jAutoConfiguration implements DisposableBean {
 			 * 调用Plugin实现类的start()方法:
 			 */
 			pluginManager.startPlugins();
+			
 			// 加载、启动绝对路径指定的插件
 			PluginUtils.loadAndStartPlugins(pluginManager, properties.getPlugins());
 		}
@@ -160,25 +151,31 @@ public class Pf4jAutoConfiguration implements DisposableBean {
 		this.pluginManager = pluginManager;
 		return pluginManager;
 	}
+	
+	@Bean
+	@ConditionalOnMissingBean
+	public UpdateRepositoryProvider updateRepositoryProvider(Pf4jProperties properties) {
+		return new DefaultUpdateRepositoryProvider(properties.getRepos());
+	}
 
 	@Bean
-	public UpdateManager updateManager(PluginManager pluginManager, Pf4jProperties properties) {
+	public UpdateManager updateManager(PluginManager pluginManager, UpdateRepositoryProvider updateRepositoryProvider,
+			Pf4jProperties properties) {
 		UpdateManager updateManager = null;
+		List<UpdateRepository> repos = updateRepositoryProvider.getRepos();
 		if (StringUtils.hasText(properties.getReposJsonPath())) {
 			updateManager = new UpdateManager(pluginManager, Paths.get(properties.getReposJsonPath()));
-		} else if (!CollectionUtils.isEmpty(properties.getRepos())) {
-
-			List<UpdateRepository> repos = new ArrayList<UpdateRepository>();
-			for (Pf4jUpdateRepository repo : properties.getRepos()) {
-				repos.add(new DefaultUpdateRepository(repo.getId(), repo.getUrl(), repo.getPluginsJsonFileName()));
-			}
+		} else if (!CollectionUtils.isEmpty(repos)) {
 			updateManager = new UpdateManager(pluginManager, repos);
-
 		} else {
 			updateManager = new UpdateManager(pluginManager);
 		}
+		
+		// auto update
+		if(properties.isAutoUpdate()) {
+			timer.schedule(new PluginUpdateTask(pluginManager, updateManager), properties.getPeriod());
+		}
 		return updateManager;
-
 	}
 
 	@Override

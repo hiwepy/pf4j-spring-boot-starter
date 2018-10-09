@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, vindell (https://github.com/vindell).
+ * Copyright (c) 2018, vindell (https://github.com/vindell).
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -13,26 +13,18 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package ro.fortsoft.pf4j.spring.boot.ext;
+package ro.fortsoft.pf4j.spring.boot.ext.update;
 
-import java.io.File;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.util.List;
 
-import ro.fortsoft.pf4j.DefaultPluginManager;
+import ro.fortsoft.pf4j.update.UpdateRepository;
 
-public class Pf4jPluginManager extends DefaultPluginManager {
+/**
+ * TODO
+ * @author 		： <a href="https://github.com/vindell">vindell</a>
+ */
+public interface UpdateRepositoryProvider {
 
-	public Pf4jPluginManager(File path) {
-		super(path.toPath());
-	}
-
-	public Pf4jPluginManager(String path) {
-		super(Paths.get(path));
-	}
-
-	public Pf4jPluginManager(Path pluginsRoot) {
-		super(pluginsRoot);
-	}
-
+	List<UpdateRepository> getRepos();
+	
 }

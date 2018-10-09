@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, vindell (https://github.com/vindell).
+ * Copyright (c) 2018, vindell (https://github.com/vindell).
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package ro.fortsoft.pf4j.spring.boot.ext;
+package ro.fortsoft.pf4j.spring.boot.ext.webmvc;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -48,9 +48,9 @@ import ro.fortsoft.pf4j.ExtensionFactory;
 import ro.fortsoft.pf4j.PluginManager;
 import ro.fortsoft.pf4j.PluginWrapper;
 
-public class Pf4jControllerExtensionsInjector implements BeanFactoryPostProcessor, ApplicationContextAware {
+public class ControllerExtensionsInjector implements BeanFactoryPostProcessor, ApplicationContextAware {
 
-	private static final Logger log = LoggerFactory.getLogger(Pf4jControllerExtensionsInjector.class);
+	private static final Logger log = LoggerFactory.getLogger(ControllerExtensionsInjector.class);
 
 	// RequestMappingHandlerMapping
 	protected static Method detectHandlerMethodsMethod = ReflectionUtils.findMethod(RequestMappingHandlerMapping.class,
