@@ -42,7 +42,9 @@ public class ExtendedJarPluginManager extends JarPluginManager {
 	@Override
 	protected PluginClasspath createPluginClasspath() {
 		return isDevelopment() ? new DevelopmentPluginClasspath()
-				: new ExtendedPluginClasspath(getClassesDirectories(), getLibDirectories());
+				: new ExtendedPluginClasspath(
+						getClassesDirectories().toArray(new String[getClassesDirectories().size()]),
+						getLibDirectories().toArray(new String[getClassesDirectories().size()]));
 	}
 	
 	@Override
@@ -54,16 +56,8 @@ public class ExtendedJarPluginManager extends JarPluginManager {
 		return classesDirectories;
 	}
 
-	public void setClassesDirectories(List<String> classesDirectories) {
-		this.classesDirectories = classesDirectories;
-	}
-
 	public List<String> getLibDirectories() {
 		return libDirectories;
-	}
-
-	public void setLibDirectories(List<String> libDirectories) {
-		this.libDirectories = libDirectories;
 	}
 
 }

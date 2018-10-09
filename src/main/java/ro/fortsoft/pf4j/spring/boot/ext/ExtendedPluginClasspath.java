@@ -15,8 +15,6 @@
  */
 package ro.fortsoft.pf4j.spring.boot.ext;
 
-import java.util.List;
-
 import ro.fortsoft.pf4j.DefaultPluginClasspath;
 
 /**
@@ -29,10 +27,6 @@ public class ExtendedPluginClasspath extends DefaultPluginClasspath {
 	public ExtendedPluginClasspath(String... classesDirectories) {
 		super();
 		addClassesDirectories(classesDirectories);
-	}
-
-	public ExtendedPluginClasspath(List<String> classesDirectories, List<String> libDirectories) {
-		this(classesDirectories.toArray(new String[classesDirectories.size()]), libDirectories.toArray(new String[libDirectories.size()]));
 	}
 	
 	public ExtendedPluginClasspath(String[] libDirectories, String... classesDirectories) {
