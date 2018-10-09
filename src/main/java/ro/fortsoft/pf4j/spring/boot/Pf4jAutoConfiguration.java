@@ -120,7 +120,7 @@ public class Pf4jAutoConfiguration implements DisposableBean {
 		if (properties.isJarPackages()) {
 			pluginManager = new ExtendedJarPluginManager(properties.getClassesDirectories(), properties.getLibDirectories());
 		} else {
-			pluginManager = new ExtendedPluginManager(pluginsRoot);
+			pluginManager = new ExtendedPluginManager(pluginsRoot, properties.getClassesDirectories(), properties.getLibDirectories());
 		}
 
 		/*

@@ -35,8 +35,8 @@ public class ExtendedJarPluginManager extends JarPluginManager {
 	}
 	
 	public ExtendedJarPluginManager(List<String> classesDirectories, List<String> libDirectories) {
-		this.classesDirectories = classesDirectories;
-		this.libDirectories = libDirectories;
+		this.classesDirectories.addAll(classesDirectories);
+		this.libDirectories.addAll(libDirectories);
 	}
 
 	@Override
