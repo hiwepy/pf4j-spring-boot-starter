@@ -23,31 +23,31 @@ import ro.fortsoft.pf4j.spring.SpringExtensionFactory;
 
 public class ExtendedJarPluginManager extends JarPluginManager {
 
-	/** Whether to register the object to the spring context */
-	private boolean injectable = true;
+	/** Whether to automatically inject dependent objects */
+	private boolean autowire = true;
 	/** Whether always returns a singleton instance. */
 	private boolean singleton = true;
 	
-	public ExtendedJarPluginManager(boolean injectable, boolean singleton ) {
-		this.injectable = injectable;
+	public ExtendedJarPluginManager(boolean autowire, boolean singleton ) {
+		this.autowire = autowire;
 		this.singleton = singleton;
 	}
 	
 	@Override
 	protected ExtensionFactory createExtensionFactory() {
-		if (this.isInjectable()) {
+		if (this.isAutowire()) {
 			if (this.isSingleton()) {
-				return new SingletonSpringExtensionFactory(this);
+				return new SingletonSpringExtensionFactory(this, true);
 			}
-			return new SpringExtensionFactory(this);
+			return new SpringExtensionFactory(this, true);	
 		}
 		return new DefaultExtensionFactory();
 	}
 
-	public boolean isInjectable() {
-		return injectable;
+	public boolean isAutowire() {
+		return autowire;
 	}
-
+	
 	public boolean isSingleton() {
 		return singleton;
 	}

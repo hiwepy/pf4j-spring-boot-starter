@@ -23,11 +23,10 @@ import java.util.Timer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
-import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -35,12 +34,14 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
+import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
 import ro.fortsoft.pf4j.PluginDescriptor;
 import ro.fortsoft.pf4j.PluginManager;
 import ro.fortsoft.pf4j.PluginStateEvent;
 import ro.fortsoft.pf4j.PluginStateListener;
 import ro.fortsoft.pf4j.RuntimeMode;
+import ro.fortsoft.pf4j.spring.SpringPlugin;
 import ro.fortsoft.pf4j.spring.boot.ext.ExtendedExtensionsInjector;
 import ro.fortsoft.pf4j.spring.boot.ext.ExtendedJarPluginManager;
 import ro.fortsoft.pf4j.spring.boot.ext.ExtendedPluginManager;
@@ -56,8 +57,7 @@ import ro.fortsoft.pf4j.update.UpdateRepository;
  * @author <a href="https://github.com/vindell">vindell</a>
  */
 @Configuration
-@AutoConfigureAfter({WebMvcAutoConfiguration.class})
-@ConditionalOnClass({ PluginManager.class })
+@ConditionalOnClass({ PluginManager.class, UpdateManager.class, SpringPlugin.class })
 @ConditionalOnProperty(prefix = Pf4jProperties.PREFIX, value = "enabled", havingValue = "true")
 @EnableConfigurationProperties(Pf4jProperties.class)
 public class Pf4jAutoConfiguration implements ApplicationContextAware {
@@ -90,6 +90,7 @@ public class Pf4jAutoConfiguration implements ApplicationContextAware {
 	}
 	
 	@Bean
+	@ConditionalOnBean(RequestMappingHandlerMapping.class)
 	public PluginManager pluginManager(Pf4jProperties properties) {
 
 		// 设置运行模式
@@ -110,9 +111,9 @@ public class Pf4jAutoConfiguration implements ApplicationContextAware {
 
 		PluginManager pluginManager = null;
 		if (properties.isJarPackages()) {
-			pluginManager = new ExtendedJarPluginManager(properties.isInjectable(), properties.isSingleton());
+			pluginManager = new ExtendedJarPluginManager(properties.isAutowire(), properties.isSingleton());
 		} else {
-			pluginManager = new ExtendedPluginManager(pluginsRoot, properties.isInjectable(), properties.isSingleton());
+			pluginManager = new ExtendedPluginManager(pluginsRoot, properties.isAutowire(), properties.isSingleton());
 		}
 
 		/*
@@ -162,6 +163,7 @@ public class Pf4jAutoConfiguration implements ApplicationContextAware {
 	}
 	
 	@Bean
+	@ConditionalOnProperty(prefix = Pf4jProperties.PREFIX, value = "injectable", havingValue = "true", matchIfMissing = true)
 	public ExtendedExtensionsInjector extensionsInjector(PluginManager pluginManager) {
 		//AbstractAutowireCapableBeanFactory beanFactory = (AbstractAutowireCapableBeanFactory) getApplicationContext().getAutowireCapableBeanFactory();
 		return new ExtendedExtensionsInjector(pluginManager);

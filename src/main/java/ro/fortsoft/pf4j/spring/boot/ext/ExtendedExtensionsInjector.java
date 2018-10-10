@@ -36,7 +36,6 @@ import org.springframework.web.servlet.mvc.condition.PatternsRequestCondition;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
-import ro.fortsoft.pf4j.ExtensionFactory;
 import ro.fortsoft.pf4j.PluginManager;
 import ro.fortsoft.pf4j.PluginWrapper;
 import ro.fortsoft.pf4j.spring.ExtensionsInjector;
@@ -78,68 +77,69 @@ public class ExtendedExtensionsInjector extends ExtensionsInjector {
 	}
 	
 	@Override
-	public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
+    public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
 		
 		this.beanFactory = beanFactory;
-		this.requestMappingHandlerMapping = beanFactory.getBean(RequestMappingHandlerMapping.class);
+		//this.requestMappingHandlerMapping = beanFactory.getBean(RequestMappingHandlerMapping.class);
 		
-		PluginManager pluginManager = beanFactory.getBean(PluginManager.class);
-		ExtensionFactory extensionFactory = pluginManager.getExtensionFactory();
-
-		// add extensions from classpath (non plugin)
-		Set<String> extensionClassNames = pluginManager.getExtensionClassNames(null);
-		for (String extensionClassName : extensionClassNames) {
-			try {
-				log.debug("Register extension '{}' as bean", extensionClassName);
-				Class<?> extensionClass = getClass().getClassLoader().loadClass(extensionClassName);
-				Object bean = extensionFactory.create(extensionClass);
-				String beanName = InjectorUtils.getBeanName(bean, extensionClassName);
-				
-				// 判断对象是否是Controller
-				if (InjectorUtils.isController(bean)) {
-					// 1、如果RequestMapping存在则移除
-					removeRequestMappingIfNecessary(beanName);
-					// 2、注册新的Controller
-					beanFactory.registerSingleton(beanName, bean);
-					// 3、注册新的RequestMapping
-					registerRequestMappingIfNecessary(beanName);
-				} else {
-					beanFactory.registerSingleton(beanName, bean);
-				}
-			} catch (ClassNotFoundException e) {
-				log.error(e.getMessage(), e);
-			}
+        // add extensions from classpath (non plugin)
+        Set<String> extensionClassNames = pluginManager.getExtensionClassNames(null);
+        for (String extensionClassName : extensionClassNames) {
+            try {
+                log.debug("Register extension '{}' as bean", extensionClassName);
+                Class<?> extensionClass = getClass().getClassLoader().loadClass(extensionClassName);
+                registerExtension(extensionClass);
+            } catch (ClassNotFoundException e) {
+                log.error(e.getMessage(), e);
+            }
+        }
+        
+        // add extensions for each started plugin
+        List<PluginWrapper> startedPlugins = pluginManager.getStartedPlugins();
+        for (PluginWrapper plugin : startedPlugins) {
+            log.debug("Registering extensions of the plugin '{}' as beans", plugin.getPluginId());
+            extensionClassNames = pluginManager.getExtensionClassNames(plugin.getPluginId());
+            for (String extensionClassName : extensionClassNames) {
+                try {
+                    log.debug("Register extension '{}' as bean", extensionClassName);
+                    Class<?> extensionClass = plugin.getPluginClassLoader().loadClass(extensionClassName);
+                    registerExtension(extensionClass);
+                } catch (ClassNotFoundException e) {
+                    log.error(e.getMessage(), e);
+                }
+            }
+        }
+    }
+	
+	/**
+     * Register an extension as bean.
+     * Current implementation register extension as singleton using {@code beanFactory.registerSingleton()}.
+     * The extension instance is created using {@code pluginManager.getExtensionFactory().create(extensionClass)}.
+     * The bean name is the extension class name.
+     * Override this method if you wish other register strategy.
+     */
+    protected void registerExtension(Class<?> extensionClass) {
+    	
+    	Object extension = pluginManager.getExtensionFactory().create(extensionClass);
+    	
+		if(!InjectorUtils.isInjectNecessary(extension)) {
+			return;
 		}
-
-		// add extensions for each started plugin
-		List<PluginWrapper> startedPlugins = pluginManager.getStartedPlugins();
-		for (PluginWrapper plugin : startedPlugins) {
-			log.debug("Registering extensions of the plugin '{}' as beans", plugin.getPluginId());
-			extensionClassNames = pluginManager.getExtensionClassNames(plugin.getPluginId());
-			for (String extensionClassName : extensionClassNames) {
-				try {
-					log.debug("Register extension '{}' as bean", extensionClassName);
-					Class<?> extensionClass = plugin.getPluginClassLoader().loadClass(extensionClassName);
-					Object bean = extensionFactory.create(extensionClass);
-					String beanName = InjectorUtils.getBeanName(bean, extensionClassName);
-					
-					// 判断对象是否是Controller
-					if (InjectorUtils.isController(bean)) {
-						// 1、如果RequestMapping存在则移除
-						removeRequestMappingIfNecessary(beanName);
-						// 2、注册新的Controller
-						beanFactory.registerSingleton(beanName, bean);
-						// 3、注册新的RequestMapping
-						registerRequestMappingIfNecessary(beanName);
-					} else {
-						beanFactory.registerSingleton(beanName, bean);
-					}
-				} catch (ClassNotFoundException e) {
-					log.error(e.getMessage(), e);
-				}
-			}
+		
+		String beanName = InjectorUtils.getBeanName(extension, extension.getClass().getName());
+		// 判断对象是否是Controller
+		if (InjectorUtils.isController(extension)) {
+			// 1、如果RequestMapping存在则移除
+			removeRequestMappingIfNecessary(beanName);
+			// 2、注册新的Controller
+			beanFactory.registerSingleton(beanName, extension);
+			// 3、注册新的RequestMapping
+			registerRequestMappingIfNecessary(beanName);
+		} else {
+			beanFactory.registerSingleton(beanName, extension);
 		}
-	}
+		
+    }
 
 	@SuppressWarnings("unchecked")
 	protected void removeRequestMappingIfNecessary(String controllerBeanName) {
