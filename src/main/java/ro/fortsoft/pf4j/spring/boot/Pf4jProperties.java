@@ -28,10 +28,14 @@ import ro.fortsoft.pf4j.RuntimeMode;
 @ConfigurationProperties(prefix = Pf4jProperties.PREFIX)
 public class Pf4jProperties {
 
-	public static final String PREFIX = "pf4j";
+	public static final String PREFIX = "spring.pf4j";
 
 	/** Enable Pf4j. */
 	private boolean enabled = false;
+	/** Whether to register the object to the spring context */
+	private boolean injectable = true;
+	/** Whether always returns a singleton instance. */
+	private boolean singleton = true;
 	/** Extended Plugin Class Directory **/
 	private List<String> classesDirectories = new ArrayList<String>();
 	/** Extended Plugin Jar Directory **/
@@ -51,7 +55,6 @@ public class Pf4jProperties {
 	private boolean lazy = true;
 	/** The delay of plugin loading and start, default：0 milliseconds **/
 	private long delay = 0;
-
 	/** Whether to automatically update the plugin **/
 	private boolean autoUpdate = false;
 	/** The period of plugin automatic update check, default：5000 milliseconds **/
@@ -67,6 +70,22 @@ public class Pf4jProperties {
 
 	public void setEnabled(boolean enabled) {
 		this.enabled = enabled;
+	}
+	
+	public boolean isInjectable() {
+		return injectable;
+	}
+
+	public void setInjectable(boolean injectable) {
+		this.injectable = injectable;
+	}
+
+	public boolean isSingleton() {
+		return singleton;
+	}
+
+	public void setSingleton(boolean singleton) {
+		this.singleton = singleton;
 	}
 
 	public List<String> getClassesDirectories() {
@@ -132,6 +151,8 @@ public class Pf4jProperties {
 	public void setDelay(long delay) {
 		this.delay = delay;
 	}
+	
+	
 
 	public boolean isAutoUpdate() {
 		return autoUpdate;
