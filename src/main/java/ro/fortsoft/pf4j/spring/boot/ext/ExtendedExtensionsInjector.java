@@ -26,7 +26,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
-import org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory;
 import org.springframework.core.MethodIntrospector;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.MultiValueMap;
@@ -71,19 +70,19 @@ public class ExtendedExtensionsInjector extends ExtensionsInjector {
 	}
 	
 	protected RequestMappingHandlerMapping requestMappingHandlerMapping;
-	protected final PluginManager pluginManager;
+	protected PluginManager pluginManager;
     protected ConfigurableListableBeanFactory beanFactory;
 
-	public ExtendedExtensionsInjector(PluginManager pluginManager, AbstractAutowireCapableBeanFactory beanFactory) {
+	public ExtendedExtensionsInjector(PluginManager pluginManager) {
 		 this.pluginManager = pluginManager;
-		 this.requestMappingHandlerMapping = beanFactory.getBean(RequestMappingHandlerMapping.class);
 	}
 	
 	@Override
 	public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
 		
 		this.beanFactory = beanFactory;
-
+		this.requestMappingHandlerMapping = beanFactory.getBean(RequestMappingHandlerMapping.class);
+		
 		PluginManager pluginManager = beanFactory.getBean(PluginManager.class);
 		ExtensionFactory extensionFactory = pluginManager.getExtensionFactory();
 

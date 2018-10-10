@@ -23,8 +23,6 @@ import java.util.Timer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.DisposableBean;
-import org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -46,9 +44,7 @@ import ro.fortsoft.pf4j.RuntimeMode;
 import ro.fortsoft.pf4j.spring.boot.ext.ExtendedExtensionsInjector;
 import ro.fortsoft.pf4j.spring.boot.ext.ExtendedJarPluginManager;
 import ro.fortsoft.pf4j.spring.boot.ext.ExtendedPluginManager;
-import ro.fortsoft.pf4j.spring.boot.ext.task.PluginLazyTask;
 import ro.fortsoft.pf4j.spring.boot.ext.task.PluginUpdateTask;
-import ro.fortsoft.pf4j.spring.boot.ext.task.PluginsLazyTask;
 import ro.fortsoft.pf4j.spring.boot.ext.update.DefaultUpdateRepositoryProvider;
 import ro.fortsoft.pf4j.spring.boot.ext.update.UpdateRepositoryProvider;
 import ro.fortsoft.pf4j.spring.boot.ext.utils.PluginUtils;
@@ -64,10 +60,9 @@ import ro.fortsoft.pf4j.update.UpdateRepository;
 @ConditionalOnClass({ PluginManager.class })
 @ConditionalOnProperty(prefix = Pf4jProperties.PREFIX, value = "enabled", havingValue = "true")
 @EnableConfigurationProperties(Pf4jProperties.class)
-public class Pf4jAutoConfiguration implements DisposableBean, ApplicationContextAware {
+public class Pf4jAutoConfiguration implements ApplicationContextAware {
 
 	private ApplicationContext applicationContext;
-	private PluginManager pluginManager;
 	private Logger logger = LoggerFactory.getLogger(Pf4jAutoConfiguration.class);
 	// 实例化Timer类
 	private Timer timer = new Timer(true);
@@ -92,12 +87,6 @@ public class Pf4jAutoConfiguration implements DisposableBean, ApplicationContext
 			}
 
 		};
-	}
-
-	@Bean
-	public ExtendedExtensionsInjector extensionsInjector(PluginManager pluginManager) {
-		AbstractAutowireCapableBeanFactory beanFactory = (AbstractAutowireCapableBeanFactory) getApplicationContext().getAutowireCapableBeanFactory();
-		return new ExtendedExtensionsInjector(pluginManager, beanFactory);
 	}
 	
 	@Bean
@@ -132,26 +121,17 @@ public class Pf4jAutoConfiguration implements DisposableBean, ApplicationContext
 		 * pluginManager.loadPlugin(pluginPath) pluginManager.startPlugin(pluginId)
 		 * pluginManager.stopPlugin(pluginId) pluginManager.unloadPlugin(pluginId)
 		 */
+		
+		// 加载、启动插件目录中的插件
+		pluginManager.loadPlugins();
+		/*
+		 * 调用Plugin实现类的start()方法:
+		 */
+		pluginManager.startPlugins();
+		
+		// 加载、启动绝对路径指定的插件
+		PluginUtils.loadAndStartPlugins(pluginManager, properties.getPlugins());
 
-		if (properties.isLazy()) {
-			// 延时加载、启动插件目录中的插件
-			timer.schedule(new PluginLazyTask(pluginManager), properties.getDelay());
-			// 延时加载、启动绝对路径指定的插件
-			timer.schedule(new PluginsLazyTask(pluginManager, properties.getPlugins()), properties.getDelay());
-		} else {
-
-			// 加载、启动插件目录中的插件
-			pluginManager.loadPlugins();
-			/*
-			 * 调用Plugin实现类的start()方法:
-			 */
-			pluginManager.startPlugins();
-			
-			// 加载、启动绝对路径指定的插件
-			PluginUtils.loadAndStartPlugins(pluginManager, properties.getPlugins());
-		}
-
-		this.pluginManager = pluginManager;
 		return pluginManager;
 	}
 	
@@ -180,17 +160,11 @@ public class Pf4jAutoConfiguration implements DisposableBean, ApplicationContext
 		}
 		return updateManager;
 	}
-
-	@Override
-	public void destroy() throws Exception {
-		// 销毁插件
-		if (pluginManager != null) {
-			/*
-			 * 调用Plugin实现类的stop()方法
-			 */
-			pluginManager.stopPlugins();
-		}
-
+	
+	@Bean
+	public ExtendedExtensionsInjector extensionsInjector(PluginManager pluginManager) {
+		//AbstractAutowireCapableBeanFactory beanFactory = (AbstractAutowireCapableBeanFactory) getApplicationContext().getAutowireCapableBeanFactory();
+		return new ExtendedExtensionsInjector(pluginManager);
 	}
 
 	@Override
