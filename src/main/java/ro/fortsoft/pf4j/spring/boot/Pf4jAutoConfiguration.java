@@ -22,13 +22,17 @@ import java.util.Timer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.util.CollectionUtils;
@@ -60,8 +64,9 @@ import ro.fortsoft.pf4j.update.UpdateRepository;
 @ConditionalOnClass({ PluginManager.class })
 @ConditionalOnProperty(prefix = Pf4jProperties.PREFIX, value = "enabled", havingValue = "true")
 @EnableConfigurationProperties(Pf4jProperties.class)
-public class Pf4jAutoConfiguration implements DisposableBean {
+public class Pf4jAutoConfiguration implements DisposableBean, ApplicationContextAware {
 
+	private ApplicationContext applicationContext;
 	private PluginManager pluginManager;
 	private Logger logger = LoggerFactory.getLogger(Pf4jAutoConfiguration.class);
 	// 实例化Timer类
@@ -90,8 +95,9 @@ public class Pf4jAutoConfiguration implements DisposableBean {
 	}
 
 	@Bean
-	public ExtendedExtensionsInjector extensionsInjector() {
-		return new ExtendedExtensionsInjector();
+	public ExtendedExtensionsInjector extensionsInjector(PluginManager pluginManager) {
+		AbstractAutowireCapableBeanFactory beanFactory = (AbstractAutowireCapableBeanFactory) getApplicationContext().getAutowireCapableBeanFactory();
+		return new ExtendedExtensionsInjector(pluginManager, beanFactory);
 	}
 	
 	@Bean
@@ -187,4 +193,13 @@ public class Pf4jAutoConfiguration implements DisposableBean {
 
 	}
 
+	@Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
+    }
+
+    public ApplicationContext getApplicationContext() {
+        return applicationContext;
+    }
+	
 }

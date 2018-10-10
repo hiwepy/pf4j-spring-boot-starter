@@ -26,7 +26,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
-import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory;
 import org.springframework.core.MethodIntrospector;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.MultiValueMap;
@@ -71,16 +71,18 @@ public class ExtendedExtensionsInjector extends ExtensionsInjector {
 	}
 	
 	protected RequestMappingHandlerMapping requestMappingHandlerMapping;
-	protected DefaultListableBeanFactory beanFactory;
+	protected final PluginManager pluginManager;
+    protected ConfigurableListableBeanFactory beanFactory;
+
+	public ExtendedExtensionsInjector(PluginManager pluginManager, AbstractAutowireCapableBeanFactory beanFactory) {
+		 this.pluginManager = pluginManager;
+		 this.requestMappingHandlerMapping = beanFactory.getBean(RequestMappingHandlerMapping.class);
+	}
 	
 	@Override
 	public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
-
-		if (!DefaultListableBeanFactory.class.isAssignableFrom(beanFactory.getClass())) {
-			log.warn("BeanFactory must be DefaultListableBeanFactory type");
-			return;
-		}
-		this.beanFactory = (DefaultListableBeanFactory) beanFactory;
+		
+		this.beanFactory = beanFactory;
 
 		PluginManager pluginManager = beanFactory.getBean(PluginManager.class);
 		ExtensionFactory extensionFactory = pluginManager.getExtensionFactory();
