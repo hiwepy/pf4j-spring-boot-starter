@@ -45,6 +45,7 @@ import ro.fortsoft.pf4j.spring.SpringPlugin;
 import ro.fortsoft.pf4j.spring.boot.ext.ExtendedExtensionsInjector;
 import ro.fortsoft.pf4j.spring.boot.ext.ExtendedJarPluginManager;
 import ro.fortsoft.pf4j.spring.boot.ext.ExtendedPluginManager;
+import ro.fortsoft.pf4j.spring.boot.ext.registry.Pf4jDynamicControllerRegistry;
 import ro.fortsoft.pf4j.spring.boot.ext.task.PluginUpdateTask;
 import ro.fortsoft.pf4j.spring.boot.ext.update.DefaultUpdateRepositoryProvider;
 import ro.fortsoft.pf4j.spring.boot.ext.update.UpdateRepositoryProvider;
@@ -67,6 +68,12 @@ public class Pf4jAutoConfiguration implements ApplicationContextAware {
 	// 实例化Timer类
 	private Timer timer = new Timer(true);
 
+	@Bean
+	@ConditionalOnMissingBean(Pf4jDynamicControllerRegistry.class)
+	public Pf4jDynamicControllerRegistry pf4jDynamicControllerRegistry() {
+		return new Pf4jDynamicControllerRegistry();
+	}
+	
 	@Bean
 	@ConditionalOnMissingBean(PluginStateListener.class)
 	public PluginStateListener pluginStateListener() {
@@ -164,9 +171,9 @@ public class Pf4jAutoConfiguration implements ApplicationContextAware {
 	
 	@Bean
 	@ConditionalOnProperty(prefix = Pf4jProperties.PREFIX, value = "injectable", havingValue = "true", matchIfMissing = true)
-	public ExtendedExtensionsInjector extensionsInjector(PluginManager pluginManager) {
-		//AbstractAutowireCapableBeanFactory beanFactory = (AbstractAutowireCapableBeanFactory) getApplicationContext().getAutowireCapableBeanFactory();
-		return new ExtendedExtensionsInjector(pluginManager);
+	public ExtendedExtensionsInjector extensionsInjector(PluginManager pluginManager, 
+			Pf4jDynamicControllerRegistry dynamicControllerRegistry) {
+		return new ExtendedExtensionsInjector(pluginManager, dynamicControllerRegistry);
 	}
 
 	@Override
