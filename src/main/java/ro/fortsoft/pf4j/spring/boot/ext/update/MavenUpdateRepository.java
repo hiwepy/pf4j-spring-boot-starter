@@ -15,35 +15,24 @@
  */
 package ro.fortsoft.pf4j.spring.boot.ext.update;
 
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
+import org.apache.maven.spring.boot.ext.MavenClientTemplate;
+import org.eclipse.aether.resolution.VersionRangeResolutionException;
+import org.eclipse.aether.resolution.VersionRangeResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.cloud.deployer.resource.maven.MavenProperties;
-import org.springframework.cloud.deployer.resource.maven.MavenResource;
 
-import com.github.zafarkhaja.semver.Version;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-
-import ro.fortsoft.pf4j.PluginException;
+import ro.fortsoft.pf4j.PluginDescriptor;
 import ro.fortsoft.pf4j.PluginManager;
 import ro.fortsoft.pf4j.PluginWrapper;
-import ro.fortsoft.pf4j.spring.boot.ext.task.PluginUpdateTask;
 import ro.fortsoft.pf4j.update.DefaultUpdateRepository;
 import ro.fortsoft.pf4j.update.FileDownloader;
 import ro.fortsoft.pf4j.update.PluginInfo;
 import ro.fortsoft.pf4j.update.PluginInfo.PluginRelease;
 import ro.fortsoft.pf4j.update.UpdateRepository;
-import ro.fortsoft.pf4j.update.util.LenientDateTypeAdapter;
 
 /**
  * TODO
@@ -54,12 +43,12 @@ public class MavenUpdateRepository implements UpdateRepository {
     private static final Logger logger = LoggerFactory.getLogger(DefaultUpdateRepository.class);
     private String id;
     private Map<String, PluginInfo> plugins;
-	private MavenProperties properties;
 	private PluginManager pluginManager;
+	private MavenClientTemplate mavenClientTemplate;
 	
-	public MavenUpdateRepository(String id, MavenProperties properties, PluginManager pluginManager) {
+	public MavenUpdateRepository(String id, MavenClientTemplate mavenClientTemplate, PluginManager pluginManager) {
 		this.id = id;
-		this.properties = properties;
+		this.mavenClientTemplate = mavenClientTemplate;
 		this.pluginManager = pluginManager;
 	}
 	
@@ -89,73 +78,32 @@ public class MavenUpdateRepository implements UpdateRepository {
 
     private void initPlugins() {
     	
-    	for (PluginWrapper installed : pluginManager.getPlugins()) {
-    		
-    		PluginInfo info = new PluginInfo();
-    		
-                Version installedVersion = installed.getDescriptor().getVersion();
-                if (pluginFromRepo.hasUpdate(getSystemVersion(), installedVersion)) {
-                    updates.add(pluginFromRepo);
-                }
-        }
-    	pluginManager.getPlugins();
-    	
-    	if (updateManager.hasAvailablePlugins()) {
-	        List<PluginInfo> availablePlugins = updateManager.getAvailablePlugins();
-	        logger.debug("Found {} available plugins", availablePlugins.size());
-	        for (PluginInfo plugin : availablePlugins) {
-	        	logger.debug("Found available plugin '{}'", plugin.id);
-	        	PluginInfo.PluginRelease lastRelease = plugin.getLastRelease(pluginManager.getSystemVersion());
-	            String lastVersion = lastRelease.version;
-	            logger.debug("Install plugin '{}' with version {}", plugin.id, lastVersion);
-	            try {
-		            boolean installed = updateManager.installPlugin(plugin.id, lastVersion);
-		            if (installed) {
-		            	logger.debug("Installed plugin '{}'", plugin.id);
-		            } else {
-		            	logger.error("Cannot install plugin '{}'", plugin.id);
-		                systemUpToDate = false;
-		            }
-	            } catch (PluginException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-	        }
-	    } else {
-	    	logger.debug("No available plugins found");
-	    }
-
-    	
-    	
-        Reader pluginsJsonReader;
-        try {
-            URL pluginsUrl = new URL(getUrl(), pluginsJsonFileName);
-            logger.debug("Read plugins of '{}' repository from '{}'", id, pluginsUrl);
-            pluginsJsonReader = new InputStreamReader(pluginsUrl.openStream());
-        } catch (Exception e) {
-            logger.error(e.getMessage(), e);
-            plugins = Collections.emptyMap();
-            return;
-        }
-
-        Gson gson = new GsonBuilder().registerTypeAdapter(Date.class, new LenientDateTypeAdapter()).create();
-        PluginInfo[] items = gson.fromJson(pluginsJsonReader, PluginInfo[].class);
-        plugins = new HashMap<>(items.length);
-        for (PluginInfo p : items) {
-            for (PluginRelease r : p.releases) {
-                try {
-                    r.url = new URL(getUrl(), r.url).toString();
-                    if (r.date.getTime() == 0) {
-                        logger.warn("Illegal release date when parsing {}@{}, setting to epoch", p.id, r.version);
-                    }
-                } catch (MalformedURLException e) {
-                    logger.warn("Skipping release {} of plugin {} due to failure to build valid absolute URL. Url was {}{}", r.version, p.id, getUrl(), r.url);
-                }
-            }
-            p.setRepositoryId(getId());
-            plugins.put(p.id, p);
-        }
-        logger.debug("Found {} plugins in repository '{}'", plugins.size(), id);
+    	try {
+			for (PluginWrapper installed : pluginManager.getPlugins()) {
+				
+				PluginInfo info = new PluginInfo();
+				// 解析Maven版本信息
+				VersionRangeResult versionRangeResult = mavenClientTemplate.versionResult(installed.getPluginId());
+				
+				PluginDescriptor descriptor = installed.getDescriptor();
+				info.id = installed.getPluginId();
+				info.description = descriptor.getPluginDescription(); 
+				info.provider = descriptor.getProvider();
+				info.releases = versionRangeResult.getVersions().stream().map(version -> {
+					PluginRelease release = new PluginInfo.PluginRelease(); 
+					release.version = version.toString();
+					//release.date = new Date();
+					return release;
+				}).collect(Collectors.toList());
+				
+				plugins.put(installed.getPluginId(), info);
+			}
+      
+			logger.debug("Found {} plugins in repository '{}'", plugins.size(), id);
+			
+		} catch (VersionRangeResolutionException e) {
+			e.printStackTrace();
+		}
     }
 
     /**
@@ -168,7 +116,7 @@ public class MavenUpdateRepository implements UpdateRepository {
 
     @Override
     public FileDownloader getFileDownloader() {
-        return new MavenFileDownloader(properties);
+        return new MavenFileDownloader(mavenClientTemplate);
     }
 
 }

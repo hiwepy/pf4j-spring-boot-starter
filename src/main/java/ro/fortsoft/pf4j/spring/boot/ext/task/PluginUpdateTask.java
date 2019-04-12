@@ -47,8 +47,6 @@ public class PluginUpdateTask extends TimerTask {
 		// >> keep system up-to-date <<
 	    boolean systemUpToDate = true;
 	    
-	    pluginManager.getPlugins()
-	    
 	    // check for updates
 	    if (updateManager.hasUpdates()) {
 	        List<PluginInfo> updates = updateManager.getUpdates();

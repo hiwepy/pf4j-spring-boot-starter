@@ -20,18 +20,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.ConnectException;
 import java.net.HttpURLConnection;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.FileTime;
 
+import org.apache.maven.spring.boot.ext.MavenClientTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.cloud.deployer.resource.maven.MavenProperties;
 
 import ro.fortsoft.pf4j.PluginException;
 import ro.fortsoft.pf4j.update.FileDownloader;
@@ -40,10 +37,10 @@ import ro.fortsoft.pf4j.update.SimpleFileDownloader;
 public class MavenFileDownloader implements FileDownloader {
 
     private static final Logger log = LoggerFactory.getLogger(SimpleFileDownloader.class);
-	private MavenProperties properties;
+	private MavenClientTemplate mavenClientTemplate;
 	
-	public MavenFileDownloader(MavenProperties properties2) {
-		this.properties = properties;
+	public MavenFileDownloader(MavenClientTemplate mavenClientTemplate) {
+		this.mavenClientTemplate = mavenClientTemplate;
 	}
 
 	/**
@@ -58,43 +55,12 @@ public class MavenFileDownloader implements FileDownloader {
         switch (fileUrl.getProtocol()) {
             case "http":
             case "https":
-                return downloadFileHttp(fileUrl.getFile());
-            case "file":
-                return copyLocalFile(fileUrl);
+                return downloadFileHttp(fileUrl);
             default:
                 throw new PluginException("URL protocol {} not supported", fileUrl.getProtocol());
         }
     }
     
-    /**
-     * Efficient copy of file in case of local file system
-     * @param fileUrl source file
-     * @return path of target file
-     * @throws IOException if problems during copy
-     * @throws PluginException in case of other problems
-     */
-    protected Path copyLocalFile(URL fileUrl) throws IOException, PluginException {
-        Path destination = Files.createTempDirectory("pf4j-update-downloader");
-        destination.toFile().deleteOnExit();
-
-        try {
-        	new URL("mvn", "", "")
-        	
-        	MavenResource.parse(coordinates, properties).getFile();
-        	
-        	
-            Path fromFile = Paths.get(fileUrl.toURI());
-            String path = fileUrl.getPath();
-            String fileName = path.substring(path.lastIndexOf('/') + 1);
-            Path toFile = destination.resolve(fileName);
-            Files.copy(fromFile, toFile, StandardCopyOption.COPY_ATTRIBUTES, StandardCopyOption.REPLACE_EXISTING);
-            validateDownload(fileUrl, toFile);
-            return toFile;
-        } catch (URISyntaxException e) {
-            throw new PluginException("Something wrong with given URL", e);
-        }
-    }
-
     /**
      * Downloads file from HTTP or FTP
      * @param fileUrl source file
@@ -110,6 +76,10 @@ public class MavenFileDownloader implements FileDownloader {
         String fileName = path.substring(path.lastIndexOf('/') + 1);
         Path file = destination.resolve(fileName);
 
+
+    	mavenClientTemplate.resolve(fileUrl.getFile()).getFile();
+    	
+    	
         // set up the URL connection
         URLConnection connection = fileUrl.openConnection();
 
