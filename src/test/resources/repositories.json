@@ -1,0 +1,10 @@
+[
+  {
+    "id": "localhost",
+    "url": "http://localhost:8081/"
+  },
+  {
+    "id": "folder",
+    "url": "file:/home/decebal/work/pf4j-update/downloads/"
+  }  
+]

@@ -22,7 +22,7 @@ public class Pf4jUpdateProperties {
 	private String id;
 	private URL url;
 	private String pluginsJsonFileName = "plugins.json";
-
+	
 	public String getId() {
 		return id;
 	}
@@ -47,4 +47,6 @@ public class Pf4jUpdateProperties {
 		this.pluginsJsonFileName = pluginsJsonFileName;
 	}
 
+	
+	
 }

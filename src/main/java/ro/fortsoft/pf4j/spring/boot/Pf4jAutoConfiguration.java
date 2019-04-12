@@ -23,6 +23,7 @@ import java.util.Timer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -47,9 +48,8 @@ import ro.fortsoft.pf4j.spring.boot.ext.ExtendedJarPluginManager;
 import ro.fortsoft.pf4j.spring.boot.ext.ExtendedPluginManager;
 import ro.fortsoft.pf4j.spring.boot.ext.registry.Pf4jDynamicControllerRegistry;
 import ro.fortsoft.pf4j.spring.boot.ext.task.PluginUpdateTask;
-import ro.fortsoft.pf4j.spring.boot.ext.update.DefaultUpdateRepositoryProvider;
-import ro.fortsoft.pf4j.spring.boot.ext.update.UpdateRepositoryProvider;
 import ro.fortsoft.pf4j.spring.boot.ext.utils.PluginUtils;
+import ro.fortsoft.pf4j.update.DefaultUpdateRepository;
 import ro.fortsoft.pf4j.update.UpdateManager;
 import ro.fortsoft.pf4j.update.UpdateRepository;
 
@@ -60,14 +60,14 @@ import ro.fortsoft.pf4j.update.UpdateRepository;
 @Configuration
 @ConditionalOnClass({ PluginManager.class, UpdateManager.class, SpringPlugin.class })
 @ConditionalOnProperty(prefix = Pf4jProperties.PREFIX, value = "enabled", havingValue = "true")
-@EnableConfigurationProperties(Pf4jProperties.class)
+@EnableConfigurationProperties({Pf4jProperties.class, Pf4jUpdateMavenProperties.class})
 public class Pf4jAutoConfiguration implements ApplicationContextAware {
 
 	private ApplicationContext applicationContext;
 	private Logger logger = LoggerFactory.getLogger(Pf4jAutoConfiguration.class);
 	// 实例化Timer类
 	private Timer timer = new Timer(true);
-
+	
 	@Bean
 	@ConditionalOnMissingBean(Pf4jDynamicControllerRegistry.class)
 	public Pf4jDynamicControllerRegistry pf4jDynamicControllerRegistry() {
@@ -144,16 +144,9 @@ public class Pf4jAutoConfiguration implements ApplicationContextAware {
 	}
 	
 	@Bean
-	@ConditionalOnMissingBean
-	public UpdateRepositoryProvider updateRepositoryProvider(Pf4jProperties properties) {
-		return new DefaultUpdateRepositoryProvider(properties.getRepos());
-	}
-
-	@Bean
-	public UpdateManager updateManager(PluginManager pluginManager, UpdateRepositoryProvider updateRepositoryProvider,
-			Pf4jProperties properties) {
+	public UpdateManager updateManager(PluginManager pluginManager,
+			@Autowired(required = false) List<UpdateRepository> repos, Pf4jProperties properties) {
 		UpdateManager updateManager = null;
-		List<UpdateRepository> repos = updateRepositoryProvider.getRepos();
 		if (StringUtils.hasText(properties.getReposJsonPath())) {
 			updateManager = new UpdateManager(pluginManager, Paths.get(properties.getReposJsonPath()));
 		} else if (!CollectionUtils.isEmpty(repos)) {
@@ -161,7 +154,16 @@ public class Pf4jAutoConfiguration implements ApplicationContextAware {
 		} else {
 			updateManager = new UpdateManager(pluginManager);
 		}
-		
+		if(!CollectionUtils.isEmpty(properties.getRepos())) {
+			for (Pf4jUpdateProperties repo : properties.getRepos()) {
+				updateManager.addRepository(new DefaultUpdateRepository(repo.getId(), repo.getUrl(), repo.getPluginsJsonFileName()));
+			}
+		}
+		if(!CollectionUtils.isEmpty(repos)) {
+			for (UpdateRepository newRepo : repos) {
+				updateManager.addRepository(newRepo);
+			}
+		}
 		// auto update
 		if(properties.isAutoUpdate()) {
 			timer.schedule(new PluginUpdateTask(pluginManager, updateManager), properties.getPeriod());
