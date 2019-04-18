@@ -144,8 +144,10 @@ public class Pf4jAutoConfiguration implements ApplicationContextAware {
 	}
 	
 	@Bean
-	public UpdateManager updateManager(PluginManager pluginManager,
-			@Autowired(required = false) List<UpdateRepository> repos, Pf4jProperties properties) {
+	public UpdateManager updateManager(
+			PluginManager pluginManager,
+			@Autowired(required = false) List<UpdateRepository> repos,
+			Pf4jProperties properties) {
 		UpdateManager updateManager = null;
 		if (StringUtils.hasText(properties.getReposJsonPath())) {
 			updateManager = new UpdateManager(pluginManager, Paths.get(properties.getReposJsonPath()));

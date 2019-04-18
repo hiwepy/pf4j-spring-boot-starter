@@ -15,28 +15,19 @@
  */
 package ro.fortsoft.pf4j.spring.boot.ext.update;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.ConnectException;
-import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.attribute.FileTime;
 
 import org.apache.maven.spring.boot.ext.MavenClientTemplate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.core.io.FileSystemResource;
 
 import ro.fortsoft.pf4j.PluginException;
 import ro.fortsoft.pf4j.update.FileDownloader;
-import ro.fortsoft.pf4j.update.SimpleFileDownloader;
 
 public class MavenFileDownloader implements FileDownloader {
 
-    private static final Logger log = LoggerFactory.getLogger(SimpleFileDownloader.class);
 	private MavenClientTemplate mavenClientTemplate;
 	
 	public MavenFileDownloader(MavenClientTemplate mavenClientTemplate) {
@@ -53,8 +44,9 @@ public class MavenFileDownloader implements FileDownloader {
      */
     public Path downloadFile(URL fileUrl) throws PluginException, IOException {
         switch (fileUrl.getProtocol()) {
-            case "http":
-            case "https":
+	        case "http":
+	        case "https":
+	        case "ftp":
                 return downloadFileHttp(fileUrl);
             default:
                 throw new PluginException("URL protocol {} not supported", fileUrl.getProtocol());
@@ -74,73 +66,9 @@ public class MavenFileDownloader implements FileDownloader {
 
         String path = fileUrl.getPath();
         String fileName = path.substring(path.lastIndexOf('/') + 1);
-        Path file = destination.resolve(fileName);
-
-
-    	mavenClientTemplate.resolve(fileUrl.getFile()).getFile();
-    	
-    	
-        // set up the URL connection
-        URLConnection connection = fileUrl.openConnection();
-
-        // connect to the remote site (may takes some time)
-        connection.connect();
-
-        // check for http authorization
-        HttpURLConnection httpConnection = (HttpURLConnection) connection;
-        if (httpConnection.getResponseCode() == HttpURLConnection.HTTP_UNAUTHORIZED) {
-            throw new ConnectException("HTTP Authorization failure");
-        }
-
-        // try to get the server-specified last-modified date of this artifact
-        long lastModified = httpConnection.getHeaderFieldDate("Last-Modified", System.currentTimeMillis());
-
-        // try to get the input stream (three times)
-        InputStream is = null;
-        for (int i = 0; i < 3; i++) {
-            try {
-                is = connection.getInputStream();
-                break;
-            } catch (IOException e) {
-                log.error(e.getMessage(), e);
-            }
-        }
-        if (is == null) {
-            throw new ConnectException("Can't get '" + fileUrl + " to '" + file + "'");
-        }
-
-        // reade from remote resource and write to the local file
-        FileOutputStream fos = new FileOutputStream(file.toFile());
-        byte[] buffer = new byte[1024];
-        int length;
-        while ((length = is.read(buffer)) >= 0) {
-            fos.write(buffer, 0, length);
-        }
-        fos.close();
-        is.close();
-
-        log.debug("Set last modified of '{}' to '{}'", file, lastModified);
-        Files.setLastModifiedTime(file, FileTime.fromMillis(lastModified));
-
-        validateDownload(fileUrl, file);
-        return file;
+        FileSystemResource resource = (FileSystemResource) mavenClientTemplate.resource(fileName);
+        return resource.getFile().toPath();
     }
-
-    /**
-     * Succeeds if downloaded file exists and has size &gt; 0
-     * <p>Override this method to provide your own validation rules such as content length matching or checksum checking etc</p>
-     * @param originalUrl the source from which the file was downloaded
-     * @param downloadedFile the path to the downloaded file
-     * @throws PluginException if the validation failed
-     */
-    protected void validateDownload(URL originalUrl, Path downloadedFile) throws PluginException {
-        try {
-            if (Files.isRegularFile(downloadedFile) && Files.size(downloadedFile) > 0) {
-                return;
-            }
-        } catch (IOException e) { /* Fallthrough */ }
-
-        throw new PluginException("Failed downloading file {}", downloadedFile);
-    }
+ 
     
 }
