@@ -19,10 +19,12 @@ import java.io.File;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Timer;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -146,21 +148,22 @@ public class Pf4jAutoConfiguration implements ApplicationContextAware {
 	@Bean
 	public UpdateManager updateManager(
 			PluginManager pluginManager,
-			@Autowired(required = false) List<UpdateRepository> repos,
+			@Autowired(required = false) ObjectProvider<UpdateRepository> repoProvider,
 			Pf4jProperties properties) {
+		
 		UpdateManager updateManager = null;
 		if (StringUtils.hasText(properties.getReposJsonPath())) {
 			updateManager = new UpdateManager(pluginManager, Paths.get(properties.getReposJsonPath()));
-		} else if (!CollectionUtils.isEmpty(repos)) {
-			updateManager = new UpdateManager(pluginManager, repos);
 		} else {
 			updateManager = new UpdateManager(pluginManager);
 		}
+		
 		if(!CollectionUtils.isEmpty(properties.getRepos())) {
 			for (Pf4jUpdateProperties repo : properties.getRepos()) {
 				updateManager.addRepository(new DefaultUpdateRepository(repo.getId(), repo.getUrl(), repo.getPluginsJsonFileName()));
 			}
 		}
+		List<UpdateRepository> repos = repoProvider.orderedStream().collect(Collectors.toList());
 		if(!CollectionUtils.isEmpty(repos)) {
 			for (UpdateRepository newRepo : repos) {
 				updateManager.addRepository(newRepo);
