@@ -13,18 +13,18 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package ro.fortsoft.pf4j.spring.boot;
+package ro.fortsoft.pf4j.spring.boot.ext.update;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.cloud.deployer.resource.maven.MavenProperties;
+import java.util.Map;
+
+import ro.fortsoft.pf4j.update.PluginInfo;
 
 /**
- * Maven Settings
- * @author ： <a href="https://github.com/vindell">vindell</a>
+ * TODO
+ * @author 		： <a href="https://github.com/vindell">vindell</a>
  */
-@ConfigurationProperties(Pf4jUpdateMavenProperties.PREFIX)
-public class Pf4jUpdateMavenProperties extends MavenProperties {
+public interface PluginInfoProvider {
 
-	public static final String PREFIX = "maven.settings";
-
+	 Map<String, PluginInfo> plugins();
+	
 }

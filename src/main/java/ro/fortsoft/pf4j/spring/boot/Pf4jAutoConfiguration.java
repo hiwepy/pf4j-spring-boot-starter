@@ -16,16 +16,10 @@
 package ro.fortsoft.pf4j.spring.boot;
 
 import java.io.File;
-import java.nio.file.Paths;
-import java.util.List;
-import java.util.Timer;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -35,12 +29,10 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
 import com.github.zafarkhaja.semver.Version;
-import com.google.common.collect.Lists;
 
 import ro.fortsoft.pf4j.PluginDescriptor;
 import ro.fortsoft.pf4j.PluginManager;
@@ -51,12 +43,10 @@ import ro.fortsoft.pf4j.spring.SpringPlugin;
 import ro.fortsoft.pf4j.spring.boot.ext.ExtendedExtensionsInjector;
 import ro.fortsoft.pf4j.spring.boot.ext.ExtendedJarPluginManager;
 import ro.fortsoft.pf4j.spring.boot.ext.ExtendedPluginManager;
+import ro.fortsoft.pf4j.spring.boot.ext.property.Pf4jUpdateMavenProperties;
 import ro.fortsoft.pf4j.spring.boot.ext.registry.Pf4jDynamicControllerRegistry;
-import ro.fortsoft.pf4j.spring.boot.ext.task.PluginUpdateTask;
 import ro.fortsoft.pf4j.spring.boot.ext.utils.PluginUtils;
-import ro.fortsoft.pf4j.update.DefaultUpdateRepository;
 import ro.fortsoft.pf4j.update.UpdateManager;
-import ro.fortsoft.pf4j.update.UpdateRepository;
 
 /**
  * Pf4j 1.x Configuration
@@ -70,14 +60,6 @@ public class Pf4jAutoConfiguration implements ApplicationContextAware {
 
 	private ApplicationContext applicationContext;
 	private Logger logger = LoggerFactory.getLogger(Pf4jAutoConfiguration.class);
-	// 实例化Timer类
-	private Timer timer = new Timer(true);
-	
-	@Bean
-	@ConditionalOnMissingBean(Pf4jDynamicControllerRegistry.class)
-	public Pf4jDynamicControllerRegistry pf4jDynamicControllerRegistry() {
-		return new Pf4jDynamicControllerRegistry();
-	}
 	
 	@Bean
 	@ConditionalOnMissingBean(PluginStateListener.class)
@@ -151,43 +133,9 @@ public class Pf4jAutoConfiguration implements ApplicationContextAware {
 	}
 	
 	@Bean
-	public UpdateManager updateManager(
-			PluginManager pluginManager,
-			@Autowired(required = false) ObjectProvider<UpdateRepository> repoProvider,
-			Pf4jProperties properties) {
-		
-		List<UpdateRepository> repositories = Lists.newArrayList();
-		if(!CollectionUtils.isEmpty(properties.getRepos())) {
-			for (Pf4jUpdateProperties repo : properties.getRepos()) {
-				repositories.add(new DefaultUpdateRepository(repo.getId(), repo.getUrl(), repo.getPluginsJsonFileName()));
-			}
-		}
-		List<UpdateRepository> repos = repoProvider.orderedStream().collect(Collectors.toList());
-		if(!CollectionUtils.isEmpty(repos)) {
-			for (UpdateRepository newRepo : repos) {
-				if (newRepo != null) {
-					repositories.add(newRepo);
-				}
-			}
-		}
-		
-		UpdateManager updateManager = null;
-		if (StringUtils.hasText(properties.getReposJsonPath())) {
-			updateManager = new UpdateManager(pluginManager, Paths.get(properties.getReposJsonPath()));
-			if(!CollectionUtils.isEmpty(repositories)) {
-				updateManager.setRepositories(repositories);
-			}
-		} else if(!CollectionUtils.isEmpty(repositories)) {
-			updateManager = new UpdateManager(pluginManager, repositories);
-		} else {
-			updateManager = new UpdateManager(pluginManager);
-		}
-		
-		// auto update
-		if(properties.isAutoUpdate()) {
-			timer.scheduleAtFixedRate(new PluginUpdateTask(pluginManager, updateManager), properties.getDelay(), properties.getPeriod());
-		}
-		return updateManager;
+	@ConditionalOnMissingBean(Pf4jDynamicControllerRegistry.class)
+	public Pf4jDynamicControllerRegistry pf4jDynamicControllerRegistry() {
+		return new Pf4jDynamicControllerRegistry();
 	}
 	
 	@Bean
