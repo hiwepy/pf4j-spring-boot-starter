@@ -13,37 +13,41 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package ro.fortsoft.pf4j.spring.boot.ext.task;
+package ro.fortsoft.pf4j.spring.boot;
 
 import java.util.List;
-import java.util.TimerTask;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 
 import com.github.zafarkhaja.semver.Version;
 
 import ro.fortsoft.pf4j.PluginException;
 import ro.fortsoft.pf4j.PluginManager;
+import ro.fortsoft.pf4j.spring.boot.ext.task.PluginUpdateTask;
 import ro.fortsoft.pf4j.update.PluginInfo;
 import ro.fortsoft.pf4j.update.UpdateManager;
 
-public class PluginUpdateTask extends TimerTask {
+@EnableScheduling
+@SpringBootApplication
+public class Pf4jUpdateAutoConfiguration_Test {
 
 	private Logger logger = LoggerFactory.getLogger(PluginUpdateTask.class);
+	@Autowired
 	private PluginManager pluginManager = null;
+	@Autowired
 	private UpdateManager updateManager = null;
 	
-	public PluginUpdateTask(PluginManager pluginManager, UpdateManager updateManager) {
-		super();
-		this.pluginManager = pluginManager;
-		this.updateManager = updateManager;
-	}
-
-	@Override
-	public void run() {
+	/**
+	 * 每10分钟更新一次
+	 */
+	@Scheduled(cron = "0 0/10 * * * ?")
+	public void autoUpdate() {
 		
-
 		// >> keep system up-to-date <<
 	    boolean systemUpToDate = true;
 	    
@@ -105,7 +109,8 @@ public class PluginUpdateTask extends TimerTask {
 	    if (systemUpToDate) {
 	    	logger.debug("System up-to-date");
 	    }
-
+		
 	}
-
+	
+	
 }

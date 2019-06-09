@@ -18,7 +18,6 @@ package ro.fortsoft.pf4j.spring.boot;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Timer;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.ObjectProvider;
@@ -35,7 +34,6 @@ import org.springframework.util.StringUtils;
 import ro.fortsoft.pf4j.PluginManager;
 import ro.fortsoft.pf4j.spring.boot.ext.property.Pf4jPluginRepoProperties;
 import ro.fortsoft.pf4j.spring.boot.ext.property.Pf4jUpdateMavenProperties;
-import ro.fortsoft.pf4j.spring.boot.ext.task.PluginUpdateTask;
 import ro.fortsoft.pf4j.spring.boot.ext.update.DefaultPluginInfoProvider;
 import ro.fortsoft.pf4j.spring.boot.ext.update.PluginInfoProvider;
 import ro.fortsoft.pf4j.update.DefaultUpdateRepository;
@@ -52,9 +50,6 @@ import ro.fortsoft.pf4j.update.UpdateRepository;
 @EnableConfigurationProperties({Pf4jUpdateProperties.class, Pf4jUpdateMavenProperties.class})
 public class Pf4jUpdateAutoConfiguration {
 	
-	// 实例化Timer类
-	private Timer timer = new Timer(true);
-
 	@Bean
 	@ConditionalOnMissingBean
 	public PluginInfoProvider pluginInfoProvider() {
@@ -94,10 +89,6 @@ public class Pf4jUpdateAutoConfiguration {
 			updateManager = new UpdateManager(pluginManager);
 		}
 		
-		// auto update
-		if(properties.isAutoUpdate()) {
-			timer.scheduleAtFixedRate(new PluginUpdateTask(pluginManager, updateManager), properties.getDelay(), properties.getPeriod());
-		}
 		return updateManager;
 	}
 	
