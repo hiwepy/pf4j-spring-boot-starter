@@ -28,7 +28,6 @@ import com.github.zafarkhaja.semver.Version;
 
 import ro.fortsoft.pf4j.PluginException;
 import ro.fortsoft.pf4j.PluginManager;
-import ro.fortsoft.pf4j.spring.boot.ext.task.PluginUpdateTask;
 import ro.fortsoft.pf4j.update.PluginInfo;
 import ro.fortsoft.pf4j.update.UpdateManager;
 
@@ -36,7 +35,7 @@ import ro.fortsoft.pf4j.update.UpdateManager;
 @SpringBootApplication
 public class Pf4jUpdateAutoConfiguration_Test {
 
-	private Logger logger = LoggerFactory.getLogger(PluginUpdateTask.class);
+	private Logger logger = LoggerFactory.getLogger(Pf4jUpdateAutoConfiguration_Test.class);
 	@Autowired
 	private PluginManager pluginManager = null;
 	@Autowired
