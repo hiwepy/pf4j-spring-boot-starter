@@ -12,7 +12,7 @@ pf4j starter for spring boot
 
 ``` xml
 <dependency>
-	<groupId>${project.groupId}</groupId>
+	<groupId>com.github.hiwepy</groupId>
 	<artifactId>pf4j-spring-boot-starter</artifactId>
 	<version>${project.version}</version>
 </dependency>
