@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package ro.fortsoft.pf4j.spring.boot.ext.property;
+package ro.fortsoft.pf4j.spring.boot;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.cloud.deployer.resource.maven.MavenProperties;
@@ -22,9 +22,20 @@ import org.springframework.cloud.deployer.resource.maven.MavenProperties;
  * Maven Settings
  * @author ： <a href="https://github.com/hiwepy">hiwepy</a>
  */
-@ConfigurationProperties(Pf4jUpdateMavenProperties.PREFIX)
-public class Pf4jUpdateMavenProperties extends MavenProperties {
+@ConfigurationProperties(Pf4jMavenProperties.PREFIX)
+public class Pf4jMavenProperties extends MavenProperties {
 
-	public static final String PREFIX = "maven.settings";
+	public static final String PREFIX = "pf4j.maven";
 
+	/** Enable Pf4j Maven. */
+	private boolean enabled = false;
+
+	public boolean isEnabled() {
+		return enabled;
+	}
+
+	public void setEnabled(boolean enabled) {
+		this.enabled = enabled;
+	}
+	
 }

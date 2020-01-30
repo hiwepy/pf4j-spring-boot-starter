@@ -20,6 +20,7 @@ import java.io.File;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
+import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -43,7 +44,6 @@ import ro.fortsoft.pf4j.spring.SpringPlugin;
 import ro.fortsoft.pf4j.spring.boot.ext.ExtendedExtensionsInjector;
 import ro.fortsoft.pf4j.spring.boot.ext.ExtendedJarPluginManager;
 import ro.fortsoft.pf4j.spring.boot.ext.ExtendedPluginManager;
-import ro.fortsoft.pf4j.spring.boot.ext.property.Pf4jUpdateMavenProperties;
 import ro.fortsoft.pf4j.spring.boot.ext.registry.Pf4jDynamicControllerRegistry;
 import ro.fortsoft.pf4j.spring.boot.ext.utils.PluginUtils;
 import ro.fortsoft.pf4j.update.UpdateManager;
@@ -53,9 +53,10 @@ import ro.fortsoft.pf4j.update.UpdateManager;
  * @author <a href="https://github.com/hiwepy">hiwepy</a>
  */
 @Configuration
+@AutoConfigureAfter({ Pf4jUpdateAutoConfiguration.class })
 @ConditionalOnClass({ PluginManager.class, UpdateManager.class, SpringPlugin.class })
 @ConditionalOnProperty(prefix = Pf4jProperties.PREFIX, value = "enabled", havingValue = "true")
-@EnableConfigurationProperties({Pf4jProperties.class, Pf4jUpdateMavenProperties.class})
+@EnableConfigurationProperties({Pf4jProperties.class, Pf4jMavenProperties.class})
 public class Pf4jAutoConfiguration implements ApplicationContextAware {
 
 	private ApplicationContext applicationContext;
