@@ -30,9 +30,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
+import org.springframework.web.client.RestTemplate;
 
 import ro.fortsoft.pf4j.PluginManager;
 import ro.fortsoft.pf4j.spring.boot.ext.property.Pf4jPluginRepoProperties;
+import ro.fortsoft.pf4j.spring.boot.ext.update.RestTemplateUpdateRepository;
 import ro.fortsoft.pf4j.update.DefaultUpdateRepository;
 import ro.fortsoft.pf4j.update.UpdateManager;
 import ro.fortsoft.pf4j.update.UpdateRepository;
@@ -52,6 +54,7 @@ public class Pf4jUpdateAutoConfiguration {
 	public UpdateManager updateManager(
 			PluginManager pluginManager,
 			@Autowired(required = false) ObjectProvider<UpdateRepository> repoProvider,
+			@Autowired(required = false) ObjectProvider<RestTemplate> restTemplateProvider,
 			Pf4jUpdateProperties properties) {
 		
 		List<UpdateRepository> repositories = new ArrayList<UpdateRepository>();
@@ -68,7 +71,11 @@ public class Pf4jUpdateAutoConfiguration {
 				}
 			}
 		}
-		
+		if(StringUtils.hasText(properties.getReposRestPath())) {
+			restTemplateProvider.ifAvailable(restTemplate -> {
+				repositories.add(new RestTemplateUpdateRepository(properties.getReposRestPath(), restTemplate));
+			});
+		}
 		UpdateManager updateManager = null;
 		if (StringUtils.hasText(properties.getReposJsonPath())) {
 			updateManager = new UpdateManager(pluginManager, Paths.get(properties.getReposJsonPath()));
