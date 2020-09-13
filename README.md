@@ -21,4 +21,3 @@ pf4j starter for spring boot
 ### Sample
 
 [https://github.com/vindell/spring-boot-starter-samples/tree/master/spring-boot-sample-pf4j](https://github.com/vindell/spring-boot-starter-samples/tree/master/spring-boot-sample-pf4j "spring-boot-sample-pf4j")
-
