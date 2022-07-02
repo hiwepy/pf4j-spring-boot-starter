@@ -14,7 +14,7 @@ pf4j starter for spring boot
 <dependency>
 	<groupId>com.github.hiwepy</groupId>
 	<artifactId>pf4j-spring-boot-starter</artifactId>
-	<version>1.0.7.RELEASE</version>
+	<version>2.0.0.RELEASE</version>
 </dependency>
 ```
 
