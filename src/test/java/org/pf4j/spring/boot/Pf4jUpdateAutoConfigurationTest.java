@@ -46,6 +46,7 @@ class Pf4jUpdateAutoConfigurationTest {
     @DisplayName("Auto-configuration loads when 'pf4j.update.enabled=true'")
     void testLoadsWhenEnabledPropertySet() {
         runner.withUserConfiguration(Pf4jUpdateAutoConfiguration.class)
+                .withBean(org.pf4j.PluginManager.class, () -> org.mockito.Mockito.mock(org.pf4j.PluginManager.class))
                 .withPropertyValues("pf4j.update.enabled=true")
                 .run(context -> assertThat(context).hasSingleBean(Pf4jUpdateAutoConfiguration.class));
     }
@@ -55,5 +56,23 @@ class Pf4jUpdateAutoConfigurationTest {
     void testNotLoadedWhenPropertyAbsent() {
         runner.withUserConfiguration(Pf4jUpdateAutoConfiguration.class)
                 .run(context -> assertThat(context).doesNotHaveBean(Pf4jUpdateAutoConfiguration.class));
+    }
+
+    @Test
+    @DisplayName("updateManager bean created with repos and reposJsonPath configured")
+    void testUpdateManagerWithRepos() {
+        runner.withUserConfiguration(Pf4jUpdateAutoConfiguration.class)
+                .withBean(org.pf4j.PluginManager.class, () -> org.mockito.Mockito.mock(org.pf4j.PluginManager.class))
+                .withPropertyValues(
+                        "pf4j.update.enabled=true",
+                        "pf4j.update.repos-json-path=/tmp/repos.json",
+                        "pf4j.update.repos-rest-path=http://example.com/repos",
+                        "pf4j.update.repos[0].id=central",
+                        "pf4j.update.repos[0].pluginsJsonFileName=plugins.json"
+                )
+                .run(context -> {
+                    assertThat(context).hasSingleBean(Pf4jUpdateAutoConfiguration.class);
+                    assertThat(context).hasSingleBean(org.pf4j.update.UpdateManager.class);
+                });
     }
 }

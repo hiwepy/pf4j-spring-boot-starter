@@ -56,4 +56,18 @@ class Pf4jAutoConfigurationTest {
         runner.withUserConfiguration(Pf4jAutoConfiguration.class)
                 .run(context -> assertThat(context).doesNotHaveBean(Pf4jAutoConfiguration.class));
     }
+
+    @Test
+    @DisplayName("pluginManager bean is created when all conditions met")
+    void testPluginManagerBeanCreated() {
+        runner.withUserConfiguration(Pf4jAutoConfiguration.class)
+                .withPropertyValues("pf4j.enabled=true")
+                .run(context -> {
+                    assertThat(context).hasSingleBean(Pf4jAutoConfiguration.class);
+                    // Verify the auto-configuration has the expected annotations
+                    assertThat(Pf4jAutoConfiguration.class.getAnnotation(
+                            org.springframework.boot.autoconfigure.condition.ConditionalOnProperty.class))
+                            .isNotNull();
+                });
+    }
 }

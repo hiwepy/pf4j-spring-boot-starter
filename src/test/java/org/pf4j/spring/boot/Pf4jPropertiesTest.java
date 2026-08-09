@@ -15,186 +15,139 @@
  */
 package org.pf4j.spring.boot;
 
+import java.util.Collections;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.pf4j.RuntimeMode;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Unit tests for {{ @link Pf4jProperties }}.
- *
- * <p>Verifies default values, getters/setters and POJO contract.</p>
+ * Unit tests for {@link Pf4jProperties}.
  *
  * @author [@Loong Wan](https://github.com/loong10k)
- * @since 1.0.0
  */
 @DisplayName("Pf4jProperties Tests")
 class Pf4jPropertiesTest {
+
     @Test
-    @DisplayName("Default constructor creates non-null instance")
+    @DisplayName("Default constructor creates non-null instance with expected defaults")
     void testDefaultInstance() {
         Pf4jProperties props = new Pf4jProperties();
         assertThat(props).isNotNull();
+        assertThat(props.isEnabled()).isFalse();
+        assertThat(props.isAutowire()).isTrue();
+        assertThat(props.isExactVersionAllowed()).isFalse();
+        assertThat(props.isInjectable()).isTrue();
+        assertThat(props.isSingleton()).isTrue();
+        assertThat(props.getClassesDirectories()).isNotNull().isEmpty();
+        assertThat(props.getLibDirectories()).isNotNull().isEmpty();
+        assertThat(props.getPlugins()).isNotNull().isEmpty();
+        assertThat(props.getPluginsRoot()).isEqualTo("plugins");
+        assertThat(props.getRuntimeMode()).isEqualTo(RuntimeMode.DEPLOYMENT);
+        assertThat(props.getSystemVersion()).isEqualTo("0.0.0");
+        assertThat(props.isJarPackages()).isTrue();
     }
 
     @Test
-    @DisplayName("Field 'enabled' can be set and read")
+    @DisplayName("enabled getter/setter")
     void testEnabledField() {
         Pf4jProperties props = new Pf4jProperties();
-        // Use reflection to set private field (covers all fields including those without setters)
-        try {
-            java.lang.reflect.Field f = Pf4jProperties.class.getDeclaredField("enabled");
-            f.setAccessible(true);
-            f.set(props, true);
-            Object value = f.get(props);
-            assertThat(value).isNotNull();
-        } catch (Exception e) {
-            // Field may have a more complex type; skip silently
-        }
+        props.setEnabled(true);
+        assertThat(props.isEnabled()).isTrue();
+        props.setEnabled(false);
+        assertThat(props.isEnabled()).isFalse();
     }
 
     @Test
-    @DisplayName("Field 'autowire' can be set and read")
+    @DisplayName("autowire getter/setter")
     void testAutowireField() {
         Pf4jProperties props = new Pf4jProperties();
-        // Use reflection to set private field (covers all fields including those without setters)
-        try {
-            java.lang.reflect.Field f = Pf4jProperties.class.getDeclaredField("autowire");
-            f.setAccessible(true);
-            f.set(props, true);
-            Object value = f.get(props);
-            assertThat(value).isNotNull();
-        } catch (Exception e) {
-            // Field may have a more complex type; skip silently
-        }
+        props.setAutowire(false);
+        assertThat(props.isAutowire()).isFalse();
+        props.setAutowire(true);
+        assertThat(props.isAutowire()).isTrue();
     }
 
     @Test
-    @DisplayName("Field 'exactVersionAllowed' can be set and read")
+    @DisplayName("exactVersionAllowed getter/setter")
     void testExactVersionAllowedField() {
         Pf4jProperties props = new Pf4jProperties();
-        // Use reflection to set private field (covers all fields including those without setters)
-        try {
-            java.lang.reflect.Field f = Pf4jProperties.class.getDeclaredField("exactVersionAllowed");
-            f.setAccessible(true);
-            f.set(props, true);
-            Object value = f.get(props);
-            assertThat(value).isNotNull();
-        } catch (Exception e) {
-            // Field may have a more complex type; skip silently
-        }
+        props.setExactVersionAllowed(true);
+        assertThat(props.isExactVersionAllowed()).isTrue();
     }
 
     @Test
-    @DisplayName("Field 'injectable' can be set and read")
+    @DisplayName("injectable getter/setter")
     void testInjectableField() {
         Pf4jProperties props = new Pf4jProperties();
-        // Use reflection to set private field (covers all fields including those without setters)
-        try {
-            java.lang.reflect.Field f = Pf4jProperties.class.getDeclaredField("injectable");
-            f.setAccessible(true);
-            f.set(props, true);
-            Object value = f.get(props);
-            assertThat(value).isNotNull();
-        } catch (Exception e) {
-            // Field may have a more complex type; skip silently
-        }
+        props.setInjectable(false);
+        assertThat(props.isInjectable()).isFalse();
     }
 
     @Test
-    @DisplayName("Field 'singleton' can be set and read")
+    @DisplayName("singleton getter/setter")
     void testSingletonField() {
         Pf4jProperties props = new Pf4jProperties();
-        // Use reflection to set private field (covers all fields including those without setters)
-        try {
-            java.lang.reflect.Field f = Pf4jProperties.class.getDeclaredField("singleton");
-            f.setAccessible(true);
-            f.set(props, true);
-            Object value = f.get(props);
-            assertThat(value).isNotNull();
-        } catch (Exception e) {
-            // Field may have a more complex type; skip silently
-        }
+        props.setSingleton(false);
+        assertThat(props.isSingleton()).isFalse();
     }
 
     @Test
-    @DisplayName("Field 'classesDirectories' can be set and read")
+    @DisplayName("classesDirectories getter/setter")
     void testClassesDirectoriesField() {
         Pf4jProperties props = new Pf4jProperties();
-        // Use reflection to set private field (covers all fields including those without setters)
-        try {
-            java.lang.reflect.Field f = Pf4jProperties.class.getDeclaredField("classesDirectories");
-            f.setAccessible(true);
-            f.set(props, null);
-            Object value = f.get(props);
-            assertThat(value).isNotNull();
-        } catch (Exception e) {
-            // Field may have a more complex type; skip silently
-        }
+        props.setClassesDirectories(Collections.singletonList("/tmp/classes"));
+        assertThat(props.getClassesDirectories()).containsExactly("/tmp/classes");
     }
 
     @Test
-    @DisplayName("Field 'libDirectories' can be set and read")
+    @DisplayName("libDirectories getter/setter")
     void testLibDirectoriesField() {
         Pf4jProperties props = new Pf4jProperties();
-        // Use reflection to set private field (covers all fields including those without setters)
-        try {
-            java.lang.reflect.Field f = Pf4jProperties.class.getDeclaredField("libDirectories");
-            f.setAccessible(true);
-            f.set(props, null);
-            Object value = f.get(props);
-            assertThat(value).isNotNull();
-        } catch (Exception e) {
-            // Field may have a more complex type; skip silently
-        }
+        props.setLibDirectories(Collections.singletonList("/tmp/libs"));
+        assertThat(props.getLibDirectories()).containsExactly("/tmp/libs");
     }
 
     @Test
-    @DisplayName("Field 'pluginsRoot' can be set and read")
+    @DisplayName("runtimeMode getter/setter")
+    void testRuntimeModeField() {
+        Pf4jProperties props = new Pf4jProperties();
+        props.setRuntimeMode(RuntimeMode.DEVELOPMENT);
+        assertThat(props.getRuntimeMode()).isEqualTo(RuntimeMode.DEVELOPMENT);
+    }
+
+    @Test
+    @DisplayName("pluginsRoot getter/setter")
     void testPluginsRootField() {
         Pf4jProperties props = new Pf4jProperties();
-        // Use reflection to set private field (covers all fields including those without setters)
-        try {
-            java.lang.reflect.Field f = Pf4jProperties.class.getDeclaredField("pluginsRoot");
-            f.setAccessible(true);
-            f.set(props, "test");
-            Object value = f.get(props);
-            assertThat(value).isNotNull();
-        } catch (Exception e) {
-            // Field may have a more complex type; skip silently
-        }
+        props.setPluginsRoot("/custom/plugins");
+        assertThat(props.getPluginsRoot()).isEqualTo("/custom/plugins");
     }
 
     @Test
-    @DisplayName("Field 'plugins' can be set and read")
+    @DisplayName("plugins getter/setter")
     void testPluginsField() {
         Pf4jProperties props = new Pf4jProperties();
-        // Use reflection to set private field (covers all fields including those without setters)
-        try {
-            java.lang.reflect.Field f = Pf4jProperties.class.getDeclaredField("plugins");
-            f.setAccessible(true);
-            f.set(props, null);
-            Object value = f.get(props);
-            assertThat(value).isNotNull();
-        } catch (Exception e) {
-            // Field may have a more complex type; skip silently
-        }
+        props.setPlugins(Collections.singletonList("my-plugin"));
+        assertThat(props.getPlugins()).containsExactly("my-plugin");
     }
 
     @Test
-    @DisplayName("Field 'jarPackages' can be set and read")
+    @DisplayName("jarPackages getter/setter")
     void testJarPackagesField() {
         Pf4jProperties props = new Pf4jProperties();
-        // Use reflection to set private field (covers all fields including those without setters)
-        try {
-            java.lang.reflect.Field f = Pf4jProperties.class.getDeclaredField("jarPackages");
-            f.setAccessible(true);
-            f.set(props, true);
-            Object value = f.get(props);
-            assertThat(value).isNotNull();
-        } catch (Exception e) {
-            // Field may have a more complex type; skip silently
-        }
+        props.setJarPackages(false);
+        assertThat(props.isJarPackages()).isFalse();
+    }
+
+    @Test
+    @DisplayName("systemVersion getter/setter")
+    void testSystemVersionField() {
+        Pf4jProperties props = new Pf4jProperties();
+        props.setSystemVersion("1.2.3");
+        assertThat(props.getSystemVersion()).isEqualTo("1.2.3");
     }
 
     @Test

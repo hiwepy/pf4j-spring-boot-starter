@@ -15,90 +15,66 @@
  */
 package org.pf4j.spring.boot;
 
+import java.util.Collections;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.pf4j.spring.boot.ext.property.Pf4jPluginRepoProperties;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Unit tests for {{ @link Pf4jUpdateProperties }}.
- *
- * <p>Verifies default values, getters/setters and POJO contract.</p>
+ * Unit tests for {@link Pf4jUpdateProperties}.
  *
  * @author [@Loong Wan](https://github.com/loong10k)
- * @since 1.0.0
  */
 @DisplayName("Pf4jUpdateProperties Tests")
 class Pf4jUpdatePropertiesTest {
+
     @Test
-    @DisplayName("Default constructor creates non-null instance")
+    @DisplayName("Default constructor creates non-null instance with expected defaults")
     void testDefaultInstance() {
         Pf4jUpdateProperties props = new Pf4jUpdateProperties();
         assertThat(props).isNotNull();
+        assertThat(props.isEnabled()).isFalse();
+        assertThat(props.getReposJsonPath()).isNull();
+        assertThat(props.getReposRestPath()).isNull();
+        assertThat(props.getRepos()).isNotNull().isEmpty();
     }
 
     @Test
-    @DisplayName("Field 'enabled' can be set and read")
+    @DisplayName("enabled getter/setter")
     void testEnabledField() {
         Pf4jUpdateProperties props = new Pf4jUpdateProperties();
-        // Use reflection to set private field (covers all fields including those without setters)
-        try {
-            java.lang.reflect.Field f = Pf4jUpdateProperties.class.getDeclaredField("enabled");
-            f.setAccessible(true);
-            f.set(props, true);
-            Object value = f.get(props);
-            assertThat(value).isNotNull();
-        } catch (Exception e) {
-            // Field may have a more complex type; skip silently
-        }
+        props.setEnabled(true);
+        assertThat(props.isEnabled()).isTrue();
     }
 
     @Test
-    @DisplayName("Field 'reposJsonPath' can be set and read")
+    @DisplayName("reposJsonPath getter/setter")
     void testReposJsonPathField() {
         Pf4jUpdateProperties props = new Pf4jUpdateProperties();
-        // Use reflection to set private field (covers all fields including those without setters)
-        try {
-            java.lang.reflect.Field f = Pf4jUpdateProperties.class.getDeclaredField("reposJsonPath");
-            f.setAccessible(true);
-            f.set(props, "test");
-            Object value = f.get(props);
-            assertThat(value).isNotNull();
-        } catch (Exception e) {
-            // Field may have a more complex type; skip silently
-        }
+        props.setReposJsonPath("/path/to/repos.json");
+        assertThat(props.getReposJsonPath()).isEqualTo("/path/to/repos.json");
     }
 
     @Test
-    @DisplayName("Field 'reposRestPath' can be set and read")
+    @DisplayName("reposRestPath getter/setter")
     void testReposRestPathField() {
         Pf4jUpdateProperties props = new Pf4jUpdateProperties();
-        // Use reflection to set private field (covers all fields including those without setters)
-        try {
-            java.lang.reflect.Field f = Pf4jUpdateProperties.class.getDeclaredField("reposRestPath");
-            f.setAccessible(true);
-            f.set(props, "test");
-            Object value = f.get(props);
-            assertThat(value).isNotNull();
-        } catch (Exception e) {
-            // Field may have a more complex type; skip silently
-        }
+        props.setReposRestPath("http://example.com/repos");
+        assertThat(props.getReposRestPath()).isEqualTo("http://example.com/repos");
     }
 
     @Test
-    @DisplayName("Field 'repos' can be set and read")
+    @DisplayName("repos getter/setter")
     void testReposField() {
         Pf4jUpdateProperties props = new Pf4jUpdateProperties();
-        // Use reflection to set private field (covers all fields including those without setters)
-        try {
-            java.lang.reflect.Field f = Pf4jUpdateProperties.class.getDeclaredField("repos");
-            f.setAccessible(true);
-            f.set(props, null);
-            Object value = f.get(props);
-            assertThat(value).isNotNull();
-        } catch (Exception e) {
-            // Field may have a more complex type; skip silently
-        }
+        Pf4jPluginRepoProperties repo = new Pf4jPluginRepoProperties();
+        repo.setId("central");
+        props.setRepos(Collections.singletonList(repo));
+        assertThat(props.getRepos()).hasSize(1);
+        assertThat(props.getRepos().get(0).getId()).isEqualTo("central");
     }
 
     @Test

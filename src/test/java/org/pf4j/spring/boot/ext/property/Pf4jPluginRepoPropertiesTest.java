@@ -15,57 +15,54 @@
  */
 package org.pf4j.spring.boot.ext.property;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Unit tests for {{ @link Pf4jPluginRepoProperties }}.
- *
- * <p>Verifies default values, getters/setters and POJO contract.</p>
+ * Unit tests for {@link Pf4jPluginRepoProperties}.
  *
  * @author [@Loong Wan](https://github.com/loong10k)
- * @since 1.0.0
  */
 @DisplayName("Pf4jPluginRepoProperties Tests")
 class Pf4jPluginRepoPropertiesTest {
+
     @Test
-    @DisplayName("Default constructor creates non-null instance")
+    @DisplayName("Default constructor creates non-null instance with expected defaults")
     void testDefaultInstance() {
         Pf4jPluginRepoProperties props = new Pf4jPluginRepoProperties();
         assertThat(props).isNotNull();
+        assertThat(props.getId()).isNull();
+        assertThat(props.getUrl()).isNull();
+        assertThat(props.getPluginsJsonFileName()).isEqualTo("plugins.json");
     }
 
     @Test
-    @DisplayName("Field 'id' can be set and read")
+    @DisplayName("id getter/setter")
     void testIdField() {
         Pf4jPluginRepoProperties props = new Pf4jPluginRepoProperties();
-        // Use reflection to set private field (covers all fields including those without setters)
-        try {
-            java.lang.reflect.Field f = Pf4jPluginRepoProperties.class.getDeclaredField("id");
-            f.setAccessible(true);
-            f.set(props, "test");
-            Object value = f.get(props);
-            assertThat(value).isNotNull();
-        } catch (Exception e) {
-            // Field may have a more complex type; skip silently
-        }
+        props.setId("central");
+        assertThat(props.getId()).isEqualTo("central");
     }
 
     @Test
-    @DisplayName("Field 'pluginsJsonFileName' can be set and read")
+    @DisplayName("url getter/setter")
+    void testUrlField() throws MalformedURLException {
+        Pf4jPluginRepoProperties props = new Pf4jPluginRepoProperties();
+        URL url = new URL("http://example.com/plugins");
+        props.setUrl(url);
+        assertThat(props.getUrl()).isEqualTo(url);
+    }
+
+    @Test
+    @DisplayName("pluginsJsonFileName getter/setter")
     void testPluginsJsonFileNameField() {
         Pf4jPluginRepoProperties props = new Pf4jPluginRepoProperties();
-        // Use reflection to set private field (covers all fields including those without setters)
-        try {
-            java.lang.reflect.Field f = Pf4jPluginRepoProperties.class.getDeclaredField("pluginsJsonFileName");
-            f.setAccessible(true);
-            f.set(props, "test");
-            Object value = f.get(props);
-            assertThat(value).isNotNull();
-        } catch (Exception e) {
-            // Field may have a more complex type; skip silently
-        }
+        props.setPluginsJsonFileName("custom-plugins.json");
+        assertThat(props.getPluginsJsonFileName()).isEqualTo("custom-plugins.json");
     }
 }

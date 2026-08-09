@@ -31,26 +31,21 @@ import static org.assertj.core.api.Assertions.assertThat;
 @DisplayName("Pf4jMavenProperties Tests")
 class Pf4jMavenPropertiesTest {
     @Test
-    @DisplayName("Default constructor creates non-null instance")
+    @DisplayName("Default constructor creates non-null instance with expected defaults")
     void testDefaultInstance() {
         Pf4jMavenProperties props = new Pf4jMavenProperties();
         assertThat(props).isNotNull();
+        assertThat(props.isEnabled()).isFalse();
     }
 
     @Test
-    @DisplayName("Field 'enabled' can be set and read")
+    @DisplayName("enabled getter/setter")
     void testEnabledField() {
         Pf4jMavenProperties props = new Pf4jMavenProperties();
-        // Use reflection to set private field (covers all fields including those without setters)
-        try {
-            java.lang.reflect.Field f = Pf4jMavenProperties.class.getDeclaredField("enabled");
-            f.setAccessible(true);
-            f.set(props, true);
-            Object value = f.get(props);
-            assertThat(value).isNotNull();
-        } catch (Exception e) {
-            // Field may have a more complex type; skip silently
-        }
+        props.setEnabled(true);
+        assertThat(props.isEnabled()).isTrue();
+        props.setEnabled(false);
+        assertThat(props.isEnabled()).isFalse();
     }
 
     @Test
