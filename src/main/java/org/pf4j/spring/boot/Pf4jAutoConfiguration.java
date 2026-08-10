@@ -42,7 +42,7 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
  * Delegates bean construction to {@code pf4j-extension-spring} and only handles
  * Spring Boot property binding + auto-configuration wiring.
  *
- * @author [@Loong Wan](https://github.com/loong10k)
+ * @author <a href="https://github.com/loong10k">Loong Wan</a>
  */
 @Configuration
 @AutoConfigureAfter({ Pf4jUpdateAutoConfiguration.class })

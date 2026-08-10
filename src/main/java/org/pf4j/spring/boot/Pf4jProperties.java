@@ -22,7 +22,7 @@ import org.pf4j.RuntimeMode;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
- * @author [@Loong Wan](https://github.com/loong10k)
+ * @author <a href="https://github.com/loong10k">Loong Wan</a>
  */
 @ConfigurationProperties(prefix = Pf4jProperties.PREFIX)
 public class Pf4jProperties {
