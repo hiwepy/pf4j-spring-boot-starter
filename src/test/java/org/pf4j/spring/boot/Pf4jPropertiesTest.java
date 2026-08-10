@@ -26,7 +26,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Unit tests for {@link Pf4jProperties}.
  *
- * @author [@Loong Wan](https://github.com/loong10k)
+ * @author <a href="https://github.com/loong10k">Loong Wan</a>
  */
 @DisplayName("Pf4jProperties Tests")
 class Pf4jPropertiesTest {
