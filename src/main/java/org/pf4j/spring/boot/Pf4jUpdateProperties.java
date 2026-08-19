@@ -41,34 +41,66 @@ public class Pf4jUpdateProperties {
 	/** Remote Repos Path **/
 	private List<Pf4jPluginRepoProperties> repos = new ArrayList<Pf4jPluginRepoProperties>();
 
+    /**
+     * <p>Checks if enabled.</p>
+     * @return the is enabled
+     */
 	public boolean isEnabled() {
 		return enabled;
 	}
 
+    /**
+     * <p>Sets the enabled.</p>
+     * @param enabled
+     */
 	public void setEnabled(boolean enabled) {
 		this.enabled = enabled;
 	}
 
+    /**
+     * <p>Returns the repos json path.</p>
+     * @return the get repos json path
+     */
 	public String getReposJsonPath() {
 		return reposJsonPath;
 	}
 
+    /**
+     * <p>Sets the repos json path.</p>
+     * @param reposJsonPath
+     */
 	public void setReposJsonPath(String reposJsonPath) {
 		this.reposJsonPath = reposJsonPath;
 	}
 	
+    /**
+     * <p>Returns the repos rest path.</p>
+     * @return the get repos rest path
+     */
 	public String getReposRestPath() {
 		return reposRestPath;
 	}
 
+    /**
+     * <p>Sets the repos rest path.</p>
+     * @param reposRestPath
+     */
 	public void setReposRestPath(String reposRestPath) {
 		this.reposRestPath = reposRestPath;
 	}
 
+    /**
+     * <p>Returns the repos.</p>
+     * @return the get repos
+     */
 	public List<Pf4jPluginRepoProperties> getRepos() {
 		return repos;
 	}
 
+    /**
+     * <p>Sets the repos.</p>
+     * @param repos
+     */
 	public void setRepos(List<Pf4jPluginRepoProperties> repos) {
 		this.repos = repos;
 	}

@@ -23,12 +23,6 @@ import org.springframework.cloud.deployer.resource.maven.MavenProperties;
  * @author <a href="https://github.com/loong10k">Loong Wan</a>
  */
 @ConfigurationProperties(Pf4jMavenProperties.PREFIX)
-/**
- * <p>Configuration properties for Pf4jMaven.</p>
- *
- * @author <a href="https://github.com/loong10k">Loong Wan</a>
- * @since 1.0.0
- */
 public class Pf4jMavenProperties extends MavenProperties {
 
 	public static final String PREFIX = "pf4j.maven";
@@ -36,10 +30,18 @@ public class Pf4jMavenProperties extends MavenProperties {
 	/** Enable Pf4j Maven. */
 	private boolean enabled = false;
 
+    /**
+     * <p>Checks if enabled.</p>
+     * @return the is enabled
+     */
 	public boolean isEnabled() {
 		return enabled;
 	}
 
+    /**
+     * <p>Sets the enabled.</p>
+     * @param enabled
+     */
 	public void setEnabled(boolean enabled) {
 		this.enabled = enabled;
 	}

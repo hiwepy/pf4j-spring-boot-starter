@@ -29,26 +29,50 @@ public class Pf4jPluginRepoProperties {
 	private URL url;
 	private String pluginsJsonFileName = "plugins.json";
 
+    /**
+     * <p>Returns the id.</p>
+     * @return the get id
+     */
 	public String getId() {
 		return id;
 	}
 
+    /**
+     * <p>Sets the id.</p>
+     * @param id
+     */
 	public void setId(String id) {
 		this.id = id;
 	}
 
+    /**
+     * <p>Returns the url.</p>
+     * @return the get url
+     */
 	public URL getUrl() {
 		return url;
 	}
 
+    /**
+     * <p>Sets the url.</p>
+     * @param url
+     */
 	public void setUrl(URL url) {
 		this.url = url;
 	}
 
+    /**
+     * <p>Returns the plugins json file name.</p>
+     * @return the get plugins json file name
+     */
 	public String getPluginsJsonFileName() {
 		return pluginsJsonFileName;
 	}
 
+    /**
+     * <p>Sets the plugins json file name.</p>
+     * @param pluginsJsonFileName
+     */
 	public void setPluginsJsonFileName(String pluginsJsonFileName) {
 		this.pluginsJsonFileName = pluginsJsonFileName;
 	}

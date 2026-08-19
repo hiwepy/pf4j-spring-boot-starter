@@ -36,16 +36,14 @@ import org.springframework.context.annotation.Configuration;
 @ConditionalOnClass({ MavenResource.class })
 @ConditionalOnProperty(prefix = Pf4jMavenProperties.PREFIX, value = "enabled", havingValue = "true")
 @EnableConfigurationProperties({Pf4jMavenProperties.class, Pf4jPluginRepoProperties.class})
-/**
- * <p>Spring Boot auto-configuration for Pf4jMaven.</p>
- *
- * @author <a href="https://github.com/loong10k">Loong Wan</a>
- * @since 1.0.0
- */
 public class Pf4jMavenAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
+    /**
+     * <p>Plugin info provider.</p>
+     * @return the plugin info provider
+     */
 	public PluginInfoProvider pluginInfoProvider() {
 		return new org.pf4j.update.extension.DefaultPluginInfoProvider();
 	}

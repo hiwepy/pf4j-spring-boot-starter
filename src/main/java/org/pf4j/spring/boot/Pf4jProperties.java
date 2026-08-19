@@ -25,12 +25,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * @author <a href="https://github.com/loong10k">Loong Wan</a>
  */
 @ConfigurationProperties(prefix = Pf4jProperties.PREFIX)
-/**
- * <p>Configuration properties for Pf4j.</p>
- *
- * @author <a href="https://github.com/loong10k">Loong Wan</a>
- * @since 1.0.0
- */
 public class Pf4jProperties {
 
 	public static final String PREFIX = "pf4j";
@@ -68,90 +62,178 @@ public class Pf4jProperties {
 	private String systemVersion = "0.0.0";
 	
 	
+    /**
+     * <p>Checks if enabled.</p>
+     * @return the is enabled
+     */
 	public boolean isEnabled() {
 		return enabled;
 	}
 
+    /**
+     * <p>Sets the enabled.</p>
+     * @param enabled
+     */
 	public void setEnabled(boolean enabled) {
 		this.enabled = enabled;
 	}
 
+    /**
+     * <p>Checks if autowire.</p>
+     * @return the is autowire
+     */
 	public boolean isAutowire() {
 		return autowire;
 	}
 
+    /**
+     * <p>Sets the autowire.</p>
+     * @param autowire
+     */
 	public void setAutowire(boolean autowire) {
 		this.autowire = autowire;
 	}
 
+    /**
+     * <p>Checks if injectable.</p>
+     * @return the is injectable
+     */
 	public boolean isInjectable() {
 		return injectable;
 	}
 
+    /**
+     * <p>Sets the injectable.</p>
+     * @param injectable
+     */
 	public void setInjectable(boolean injectable) {
 		this.injectable = injectable;
 	}
 
+    /**
+     * <p>Checks if singleton.</p>
+     * @return the is singleton
+     */
 	public boolean isSingleton() {
 		return singleton;
 	}
 
+    /**
+     * <p>Sets the singleton.</p>
+     * @param singleton
+     */
 	public void setSingleton(boolean singleton) {
 		this.singleton = singleton;
 	}
 
+    /**
+     * <p>Returns the classes directories.</p>
+     * @return the get classes directories
+     */
 	public List<String> getClassesDirectories() {
 		return classesDirectories;
 	}
 
+    /**
+     * <p>Sets the classes directories.</p>
+     * @param classesDirectories
+     */
 	public void setClassesDirectories(List<String> classesDirectories) {
 		this.classesDirectories = classesDirectories;
 	}
 
+    /**
+     * <p>Returns the lib directories.</p>
+     * @return the get lib directories
+     */
 	public List<String> getLibDirectories() {
 		return libDirectories;
 	}
 
+    /**
+     * <p>Sets the lib directories.</p>
+     * @param libDirectories
+     */
 	public void setLibDirectories(List<String> libDirectories) {
 		this.libDirectories = libDirectories;
 	}
 
+    /**
+     * <p>Returns the runtime mode.</p>
+     * @return the get runtime mode
+     */
 	public RuntimeMode getRuntimeMode() {
 		return runtimeMode;
 	}
 
+    /**
+     * <p>Sets the runtime mode.</p>
+     * @param runtimeMode
+     */
 	public void setRuntimeMode(RuntimeMode runtimeMode) {
 		this.runtimeMode = runtimeMode;
 	}
 
+    /**
+     * <p>Returns the system version.</p>
+     * @return the get system version
+     */
 	public String getSystemVersion() {
 		return systemVersion;
 	}
 
+    /**
+     * <p>Sets the system version.</p>
+     * @param systemVersion
+     */
 	public void setSystemVersion(String systemVersion) {
 		this.systemVersion = systemVersion;
 	}
 
+    /**
+     * <p>Returns the plugins root.</p>
+     * @return the get plugins root
+     */
 	public String getPluginsRoot() {
 		return pluginsRoot;
 	}
 
+    /**
+     * <p>Sets the plugins root.</p>
+     * @param pluginsRoot
+     */
 	public void setPluginsRoot(String pluginsRoot) {
 		this.pluginsRoot = pluginsRoot;
 	}
 
+    /**
+     * <p>Returns the plugins.</p>
+     * @return the get plugins
+     */
 	public List<String> getPlugins() {
 		return plugins;
 	}
 
+    /**
+     * <p>Sets the plugins.</p>
+     * @param plugins
+     */
 	public void setPlugins(List<String> plugins) {
 		this.plugins = plugins;
 	}
 
+    /**
+     * <p>Checks if jar packages.</p>
+     * @return the is jar packages
+     */
 	public boolean isJarPackages() {
 		return jarPackages;
 	}
 
+    /**
+     * <p>Sets the jar packages.</p>
+     * @param jarPackages
+     */
 	public void setJarPackages(boolean jarPackages) {
 		this.jarPackages = jarPackages;
 	}
@@ -167,6 +249,10 @@ public class Pf4jProperties {
 		this.exactVersionAllowed = exactVersionAllowed;
 	}
 
+    /**
+     * <p>Checks if exact version allowed.</p>
+     * @return the is exact version allowed
+     */
 	public boolean isExactVersionAllowed() {
 		return exactVersionAllowed;
 	}

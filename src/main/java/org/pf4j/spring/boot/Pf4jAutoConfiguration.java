@@ -37,28 +37,28 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
 /**
- * Pf4j Spring Boot Auto Configuration.
- * <p>
- * Delegates bean construction to {@code pf4j-extension-spring} and only handles
- * Spring Boot property binding + auto-configuration wiring.
+ * <p>Spring Boot auto-configuration for Pf4j.</p>
+ * <p>Delegates bean construction to {@code pf4j-extension-spring} and only handles
+ * Spring Boot property binding and auto-configuration wiring.</p>
  *
  * @author <a href="https://github.com/loong10k">Loong Wan</a>
+ * @since 1.0.0
  */
 @Configuration
 @AutoConfigureAfter({ Pf4jUpdateAutoConfiguration.class })
 @ConditionalOnClass({ PluginManager.class, UpdateManager.class, ExtendedSpringPluginManager.class })
 @ConditionalOnProperty(prefix = Pf4jProperties.PREFIX, value = "enabled", havingValue = "true")
 @EnableConfigurationProperties({Pf4jProperties.class})
-/**
- * <p>Spring Boot auto-configuration for Pf4j.</p>
- *
- * @author <a href="https://github.com/loong10k">Loong Wan</a>
- * @since 1.0.0
- */
 public class Pf4jAutoConfiguration {
 
 	private Logger logger = LoggerFactory.getLogger(Pf4jAutoConfiguration.class);
 
+	/**
+	 * <p>Creates a dynamic controller registry backed by the Spring MVC handler mapping.</p>
+	 *
+	 * @param handlerMappingProvider provider for the request mapping handler mapping
+	 * @return a {@link DynamicControllerRegistry} instance
+	 */
 	@Bean
 	@ConditionalOnMissingBean(DynamicControllerRegistry.class)
 	public DynamicControllerRegistry pf4jDynamicControllerRegistry(
@@ -70,6 +70,14 @@ public class Pf4jAutoConfiguration {
 		return new Pf4jDynamicControllerRegistry(handlerMapping);
 	}
 
+	/**
+	 * <p>Creates and configures the Pf4j plugin manager with runtime mode, plugin directory,
+	 * and autowiring settings from the properties.</p>
+	 *
+	 * @param properties               the Pf4j configuration properties
+	 * @param dynamicControllerRegistry the dynamic controller registry
+	 * @return a configured {@link PluginManager} instance
+	 */
 	@Bean
 	public PluginManager pluginManager(Pf4jProperties properties,
 			DynamicControllerRegistry dynamicControllerRegistry) {
