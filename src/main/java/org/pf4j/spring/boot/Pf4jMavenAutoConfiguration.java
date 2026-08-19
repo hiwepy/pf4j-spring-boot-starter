@@ -36,6 +36,12 @@ import org.springframework.context.annotation.Configuration;
 @ConditionalOnClass({ MavenResource.class })
 @ConditionalOnProperty(prefix = Pf4jMavenProperties.PREFIX, value = "enabled", havingValue = "true")
 @EnableConfigurationProperties({Pf4jMavenProperties.class, Pf4jPluginRepoProperties.class})
+/**
+ * <p>Spring Boot auto-configuration for Pf4jMaven.</p>
+ *
+ * @author <a href="https://github.com/loong10k">Loong Wan</a>
+ * @since 1.0.0
+ */
 public class Pf4jMavenAutoConfiguration {
 
 	@Bean

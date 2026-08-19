@@ -17,6 +17,12 @@ package org.pf4j.spring.boot.ext.property;
 
 import java.net.URL;
 
+/**
+ * <p>Configuration properties for Pf4jPluginRepo.</p>
+ *
+ * @author <a href="https://github.com/loong10k">Loong Wan</a>
+ * @since 1.0.0
+ */
 public class Pf4jPluginRepoProperties {
 
 	private String id;

@@ -22,6 +22,12 @@ import org.pf4j.spring.boot.ext.property.Pf4jPluginRepoProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = Pf4jUpdateProperties.PREFIX)
+/**
+ * <p>Configuration properties for Pf4jUpdate.</p>
+ *
+ * @author <a href="https://github.com/loong10k">Loong Wan</a>
+ * @since 1.0.0
+ */
 public class Pf4jUpdateProperties {
 
 	public static final String PREFIX = "pf4j.update";

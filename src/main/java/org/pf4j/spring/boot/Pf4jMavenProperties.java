@@ -23,6 +23,12 @@ import org.springframework.cloud.deployer.resource.maven.MavenProperties;
  * @author <a href="https://github.com/loong10k">Loong Wan</a>
  */
 @ConfigurationProperties(Pf4jMavenProperties.PREFIX)
+/**
+ * <p>Configuration properties for Pf4jMaven.</p>
+ *
+ * @author <a href="https://github.com/loong10k">Loong Wan</a>
+ * @since 1.0.0
+ */
 public class Pf4jMavenProperties extends MavenProperties {
 
 	public static final String PREFIX = "pf4j.maven";

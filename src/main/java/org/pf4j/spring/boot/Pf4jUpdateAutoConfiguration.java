@@ -48,6 +48,12 @@ import org.springframework.web.client.RestTemplate;
 @ConditionalOnClass({ UpdateManager.class })
 @ConditionalOnProperty(prefix = Pf4jUpdateProperties.PREFIX, value = "enabled", havingValue = "true")
 @EnableConfigurationProperties({Pf4jUpdateProperties.class})
+/**
+ * <p>Spring Boot auto-configuration for Pf4jUpdate.</p>
+ *
+ * @author <a href="https://github.com/loong10k">Loong Wan</a>
+ * @since 1.0.0
+ */
 public class Pf4jUpdateAutoConfiguration {
 
 	@Bean

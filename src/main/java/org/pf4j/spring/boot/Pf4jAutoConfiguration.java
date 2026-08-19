@@ -49,6 +49,12 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
 @ConditionalOnClass({ PluginManager.class, UpdateManager.class, ExtendedSpringPluginManager.class })
 @ConditionalOnProperty(prefix = Pf4jProperties.PREFIX, value = "enabled", havingValue = "true")
 @EnableConfigurationProperties({Pf4jProperties.class})
+/**
+ * <p>Spring Boot auto-configuration for Pf4j.</p>
+ *
+ * @author <a href="https://github.com/loong10k">Loong Wan</a>
+ * @since 1.0.0
+ */
 public class Pf4jAutoConfiguration {
 
 	private Logger logger = LoggerFactory.getLogger(Pf4jAutoConfiguration.class);

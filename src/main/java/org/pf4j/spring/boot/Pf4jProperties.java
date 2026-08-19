@@ -25,6 +25,12 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * @author <a href="https://github.com/loong10k">Loong Wan</a>
  */
 @ConfigurationProperties(prefix = Pf4jProperties.PREFIX)
+/**
+ * <p>Configuration properties for Pf4j.</p>
+ *
+ * @author <a href="https://github.com/loong10k">Loong Wan</a>
+ * @since 1.0.0
+ */
 public class Pf4jProperties {
 
 	public static final String PREFIX = "pf4j";
